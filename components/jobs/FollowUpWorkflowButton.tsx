@@ -36,7 +36,13 @@ const nextFollowUpPresets = [
   { value: "custom", label: "Custom" },
 ] as const;
 
-export function FollowUpWorkflowButton({ job }: { job: JobWithActivity }) {
+export function FollowUpWorkflowButton({
+  job,
+  triggerClassName,
+}: {
+  job: JobWithActivity;
+  triggerClassName?: string;
+}) {
   const router = useRouter();
   const actionLabel = getRecommendedAction(job.status);
   const [open, setOpen] = useState(false);
@@ -49,7 +55,7 @@ export function FollowUpWorkflowButton({ job }: { job: JobWithActivity }) {
     return (
       <Link
         href={`/jobs/${job.id}`}
-        className={cn(buttonVariants({ size: "sm" }))}
+        className={cn(buttonVariants({ size: "sm" }), triggerClassName)}
       >
         {job.status === "SCHEDULED" ? "View job" : "Open"}
       </Link>
@@ -72,7 +78,7 @@ export function FollowUpWorkflowButton({ job }: { job: JobWithActivity }) {
         if (!next) reset();
       }}
     >
-      <DialogTrigger className={cn(buttonVariants({ size: "sm" }))}>
+      <DialogTrigger className={cn(buttonVariants({ size: "sm" }), triggerClassName)}>
         {actionLabel}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

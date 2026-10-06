@@ -12,9 +12,11 @@ import { toast } from "sonner";
 export function JobStatusSelect({
   jobId,
   status,
+  variant = "default",
 }: {
   jobId: string;
   status: JobStatus;
+  variant?: "default" | "telemetry";
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -22,7 +24,11 @@ export function JobStatusSelect({
   return (
     <select
       aria-label="Job status"
-      className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+      className={
+        variant === "telemetry"
+          ? "rounded-[4px] border border-nt-border bg-[#18181A] px-2 py-0.5 font-mono text-[11px] text-white outline-none focus:border-white focus:ring-0 disabled:opacity-50"
+          : "h-9 rounded-[4px] border border-input bg-[#0A0A0A] px-3 text-sm text-foreground outline-none focus:border-white"
+      }
       value={status}
       disabled={pending}
       onChange={(event) => {

@@ -1,5 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 type SummaryMetricsProps = {
   followUpsToday: number;
   overdue: number;
@@ -8,29 +6,39 @@ type SummaryMetricsProps = {
 };
 
 const items = [
-  { key: "followUpsToday", label: "Follow-ups today" },
-  { key: "overdue", label: "Overdue" },
-  { key: "openJobs", label: "Open jobs" },
-  { key: "scheduled", label: "Scheduled" },
+  { key: "followUpsToday", label: "Follow-ups Today", alert: false },
+  { key: "overdue", label: "Overdue", alert: true },
+  { key: "openJobs", label: "Open Jobs", alert: false },
+  { key: "scheduled", label: "Scheduled", alert: false },
 ] as const;
 
 export function SummaryMetrics(props: SummaryMetricsProps) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <section
+      className="grid grid-cols-2 gap-4 lg:grid-cols-4"
+      data-purpose="metrics-grid"
+    >
       {items.map((item) => (
-        <Card key={item.key} className="shadow-none">
-          <CardHeader className="pb-1 pt-4">
-            <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              {item.label}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-4">
-            <p className="text-2xl font-semibold tracking-tight tabular-nums">
-              {props[item.key]}
-            </p>
-          </CardContent>
-        </Card>
+        <div
+          key={item.key}
+          className="flex flex-col justify-between rounded-lg border border-nt-border bg-nt-surface p-4"
+        >
+          <span
+            className={`font-mono text-[10px] font-semibold tracking-wider uppercase ${
+              item.alert ? "text-nt-red" : "text-nt-secondary"
+            }`}
+          >
+            {item.label}
+          </span>
+          <span
+            className={`mt-2 font-display text-3xl font-bold tracking-tight ${
+              item.alert ? "text-nt-red" : "text-white"
+            }`}
+          >
+            {props[item.key]}
+          </span>
+        </div>
       ))}
-    </div>
+    </section>
   );
 }

@@ -5,73 +5,72 @@ import { FollowUpStateBadge } from "@/components/jobs/FollowUpStateBadge";
 import { FollowUpWorkflowButton } from "@/components/jobs/FollowUpWorkflowButton";
 import { JobStatusSelect } from "@/components/jobs/JobStatusSelect";
 import { formatDate } from "@/lib/dates";
-import { getFollowUpUrgencyLabel } from "@/lib/follow-ups";
+import { getFollowUpState, getFollowUpUrgencyLabel } from "@/lib/follow-ups";
 import { cn } from "@/lib/utils";
 
 type JobWithActivity = Job & { activities?: Activity[] };
 
+const ghostAction =
+  "h-auto rounded-[4px] border-[#222222] bg-transparent px-3 py-1.5 font-mono text-xs font-normal text-nt-secondary shadow-none hover:bg-[#1E1E22] hover:text-white dark:border-[#222222] dark:bg-transparent dark:text-nt-secondary dark:hover:bg-[#1E1E22] dark:hover:text-white";
+
+const primaryAction =
+  "h-auto rounded-[4px] border-transparent bg-white px-3 py-1.5 font-mono text-xs font-medium text-black shadow-none hover:bg-neutral-200";
+
 export function JobAttentionCard({ job }: { job: JobWithActivity }) {
   const callHref = job.phone ? `tel:${job.phone.replace(/\s/g, "")}` : null;
+  const state = getFollowUpState(job);
+  const isOverdue = state === "OVERDUE";
   const urgency = getFollowUpUrgencyLabel(job);
-  const isOverdue = urgency.toLowerCase().includes("overdue");
 
   return (
     <article
       className={cn(
-        "rounded-xl border bg-card p-5 shadow-sm",
-        isOverdue ? "border-destructive/40" : "border-border",
+        "flex flex-col justify-between gap-4 rounded-md border border-nt-border bg-nt-card p-4 transition-colors md:flex-row md:items-center",
+        isOverdue ? "hover:border-nt-red-border" : "hover:border-nt-amber-border",
       )}
     >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1 space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-lg font-semibold tracking-tight">
-              {job.customerName}
-            </h3>
-            <JobStatusSelect jobId={job.id} status={job.status} />
-          </div>
-          {job.company ? (
-            <p className="text-sm text-muted-foreground">{job.company}</p>
-          ) : null}
-          <p className="text-sm leading-relaxed">{job.jobDescription}</p>
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <FollowUpStateBadge job={job} />
-            <span className="text-muted-foreground">
-              Follow-up {formatDate(job.nextFollowUp)}
-            </span>
-          </div>
-          <p
+      <div className="min-w-[280px] space-y-1.5">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-sm font-semibold tracking-tight text-white">
+            {job.customerName}
+          </span>
+          <JobStatusSelect jobId={job.id} status={job.status} variant="telemetry" />
+        </div>
+        {job.company ? (
+          <p className="text-xs font-medium text-nt-muted">{job.company}</p>
+        ) : null}
+        <p className="text-xs font-normal text-neutral-300">{job.jobDescription}</p>
+        <div className="flex items-center gap-2 pt-0.5">
+          <FollowUpStateBadge job={job} />
+          <span className="font-mono text-[11px] text-nt-secondary">
+            Follow-up {formatDate(job.nextFollowUp)}
+          </span>
+        </div>
+        <div className="flex items-center gap-3 pt-0.5">
+          <span
             className={cn(
-              "text-sm font-semibold uppercase tracking-wide",
-              isOverdue
-                ? "text-destructive"
-                : "text-amber-700 dark:text-amber-400",
+              "font-mono text-xs font-bold tracking-wide uppercase",
+              isOverdue ? "text-nt-red" : "text-nt-amber",
             )}
           >
             {urgency}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {callHref ? (
-              <a href={callHref} className="text-primary hover:underline">
-                {job.phone}
-              </a>
-            ) : (
-              "No phone number"
-            )}
-          </p>
+          </span>
+          {job.phone ? (
+            <span className="font-mono text-xs text-nt-secondary">{job.phone}</span>
+          ) : (
+            <span className="font-mono text-xs text-nt-secondary">No phone</span>
+          )}
         </div>
-        <div className="flex flex-wrap gap-2 lg:max-w-xs lg:justify-end">
-          {callHref ? (
-            <a
-              href={callHref}
-              className="inline-flex h-8 items-center rounded-lg border border-border px-2.5 text-sm font-medium hover:bg-muted"
-            >
-              Call
-            </a>
-          ) : null}
-          <FollowUpWorkflowButton job={job} />
-          <ChangeFollowUpButton jobId={job.id} />
-        </div>
+      </div>
+
+      <div className="flex shrink-0 items-center gap-2 self-start md:self-center">
+        {callHref ? (
+          <a href={callHref} className={cn(ghostAction, "inline-flex items-center")}>
+            Call
+          </a>
+        ) : null}
+        <FollowUpWorkflowButton job={job} triggerClassName={primaryAction} />
+        <ChangeFollowUpButton jobId={job.id} className={ghostAction} />
       </div>
     </article>
   );

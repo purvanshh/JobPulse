@@ -5,14 +5,11 @@ import { cn } from "@/lib/utils";
 import { JOB_STATUS_LABELS } from "@/types";
 
 const statusStyles: Record<JobStatus, string> = {
-  NEW: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-100",
-  WAITING_ON_QUOTE:
-    "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100",
-  WAITING_ON_CUSTOMER:
-    "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-100",
-  SCHEDULED:
-    "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100",
-  DONE: "bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-200",
+  NEW: "border-nt-border bg-nt-card text-nt-muted",
+  WAITING_ON_QUOTE: "border-nt-amber-border bg-nt-amber-subtle text-nt-amber",
+  WAITING_ON_CUSTOMER: "border-[#27272A] bg-[#18181B] text-white",
+  SCHEDULED: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
+  DONE: "border-nt-border bg-[#0A0A0A] text-nt-secondary",
 };
 
 export function JobStatusBadge({
@@ -24,8 +21,12 @@ export function JobStatusBadge({
 }) {
   return (
     <Badge
-      variant="secondary"
-      className={cn("border-0 font-medium", statusStyles[status], className)}
+      variant="outline"
+      className={cn(
+        "h-auto rounded-[4px] px-1.5 py-0.5 font-mono text-[10px] font-medium",
+        statusStyles[status],
+        className,
+      )}
     >
       {JOB_STATUS_LABELS[status]}
     </Badge>

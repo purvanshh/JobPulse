@@ -16,38 +16,56 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "Today", icon: CalendarDays },
-  { href: "/jobs", label: "Jobs", icon: ClipboardList },
+  { href: "/", label: "Today", icon: CalendarDays, attention: true },
+  { href: "/jobs", label: "Jobs", icon: ClipboardList, attention: false },
+  { href: "/settings", label: "Settings", icon: Settings, attention: false },
 ];
+
+function isActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function MobileNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex items-center justify-between border-b border-border bg-card px-4 py-3 md:hidden">
-      <div className="flex items-center gap-2">
-        <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <Wrench className="size-4" aria-hidden />
+    <div className="flex items-center justify-between border-b border-nt-border bg-[#0A0A0A] px-4 py-3 md:hidden">
+      <div className="flex items-center gap-2.5">
+        <div className="flex h-8 w-8 items-center justify-center rounded-[4px] border border-nt-border bg-[#18181B] text-white">
+          <Wrench className="h-4 w-4" aria-hidden />
         </div>
-        <span className="font-semibold">JobPulse</span>
+        <div>
+          <p className="text-sm leading-none font-semibold tracking-tight">JobPulse</p>
+          <p className="mt-1 font-mono text-[10px] text-nt-secondary">Follow-up workspace</p>
+        </div>
       </div>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger
-          render={<Button variant="outline" size="icon" aria-label="Open menu" />}
+          render={
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Open menu"
+              className="border-nt-border bg-transparent text-nt-muted hover:bg-[#141414] hover:text-white"
+            />
+          }
         >
           <Menu className="size-4" />
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0">
-          <SheetHeader className="border-b border-border px-4 py-4 text-left">
-            <SheetTitle>Navigation</SheetTitle>
+        <SheetContent
+          side="left"
+          className="w-64 border-nt-border bg-[#0A0A0A] p-0 text-white shadow-none"
+        >
+          <SheetHeader className="border-b border-nt-border px-5 py-5 text-left">
+            <SheetTitle className="font-display text-sm font-semibold tracking-tight text-white">
+              JobPulse
+            </SheetTitle>
           </SheetHeader>
           <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Mobile">
-            {navItems.map(({ href, label, icon: Icon }) => {
-              const active =
-                href === "/"
-                  ? pathname === "/"
-                  : pathname === href || pathname.startsWith(`${href}/`);
+            {navItems.map(({ href, label, icon: Icon, attention }) => {
+              const active = isActive(pathname, href);
 
               return (
                 <Link
@@ -55,28 +73,36 @@ export function MobileNav() {
                   href={href}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium",
-                    active ? "bg-muted" : "hover:bg-muted/60",
+                    "flex items-center rounded-[4px] px-3 py-2 text-xs font-medium transition-colors",
+                    active
+                      ? "justify-between border border-[#27272A] bg-[#161616] text-white"
+                      : "gap-2.5 text-nt-muted hover:bg-[#141414] hover:text-white",
                   )}
                 >
-                  <Icon className="size-4" aria-hidden />
-                  {label}
+                  <span className="flex items-center gap-2.5">
+                    <Icon className="h-3.5 w-3.5" aria-hidden />
+                    {label}
+                  </span>
+                  {active && attention ? (
+                    <span className="h-1.5 w-1.5 rounded-full bg-nt-red shadow-[0_0_8px_rgba(255,46,46,0.6)]" />
+                  ) : null}
                 </Link>
               );
             })}
           </nav>
-          <div className="border-t border-border p-3">
-            <Link
-              href="/settings"
-              onClick={() => setOpen(false)}
-              className={cn(
-                "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium",
-                pathname === "/settings" ? "bg-muted" : "hover:bg-muted/60",
-              )}
-            >
-              <Settings className="size-4" aria-hidden />
-              Prototype notes
-            </Link>
+          <div className="mt-auto flex items-center justify-between border-t border-nt-border p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#27272A] bg-[#18181B] font-mono text-xs font-semibold">
+                D
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs leading-tight font-medium">Denise</span>
+                <span className="font-mono text-[10px] text-nt-secondary">
+                  Workspace Admin
+                </span>
+              </div>
+            </div>
+            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
           </div>
         </SheetContent>
       </Sheet>

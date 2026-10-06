@@ -32,12 +32,14 @@ type ChangeFollowUpButtonProps = {
   jobId: string;
   size?: "sm" | "default";
   label?: string;
+  className?: string;
 };
 
 export function ChangeFollowUpButton({
   jobId,
   size = "sm",
   label = "Set follow-up",
+  className,
 }: ChangeFollowUpButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -59,7 +61,9 @@ export function ChangeFollowUpButton({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className={cn(buttonVariants({ variant: "outline", size }))}>
+      <DialogTrigger
+        className={cn(buttonVariants({ variant: "outline", size }), className)}
+      >
         {label}
       </DialogTrigger>
       <DialogContent>
