@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, ClipboardList, PlusCircle, Wrench } from "lucide-react";
+import { CalendarDays, ClipboardList, Settings, Wrench } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/today", label: "Today", icon: CalendarDays },
+  { href: "/", label: "Today", icon: CalendarDays },
   { href: "/jobs", label: "Jobs", icon: ClipboardList },
-  { href: "/jobs/new", label: "Add Job", icon: PlusCircle },
 ];
 
 export function Sidebar() {
@@ -26,15 +25,13 @@ export function Sidebar() {
           <p className="text-xs text-muted-foreground">Follow-up workspace</p>
         </div>
       </div>
+
       <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active =
-            href === "/jobs/new"
-              ? pathname === "/jobs/new"
-              : href === "/jobs"
-                ? pathname === "/jobs" ||
-                  (pathname.startsWith("/jobs/") && pathname !== "/jobs/new")
-                : pathname === href;
+            href === "/"
+              ? pathname === "/"
+              : pathname === href || pathname.startsWith(`${href}/`);
 
           return (
             <Link
@@ -53,6 +50,21 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      <div className="border-t border-sidebar-border p-3">
+        <Link
+          href="/settings"
+          className={cn(
+            "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            pathname === "/settings"
+              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+              : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+          )}
+        >
+          <Settings className="size-4 shrink-0" aria-hidden />
+          Settings
+        </Link>
+      </div>
     </aside>
   );
 }

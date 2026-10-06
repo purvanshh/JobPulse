@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, ClipboardList, Menu, PlusCircle, Wrench } from "lucide-react";
+import { CalendarDays, ClipboardList, Menu, Settings, Wrench } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,8 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/today", label: "Today", icon: CalendarDays },
+  { href: "/", label: "Today", icon: CalendarDays },
   { href: "/jobs", label: "Jobs", icon: ClipboardList },
-  { href: "/jobs/new", label: "Add Job", icon: PlusCircle },
 ];
 
 export function MobileNav() {
@@ -34,22 +33,21 @@ export function MobileNav() {
         <span className="font-semibold">JobPulse</span>
       </div>
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger render={<Button variant="outline" size="icon" aria-label="Open menu" />}>
+        <SheetTrigger
+          render={<Button variant="outline" size="icon" aria-label="Open menu" />}
+        >
           <Menu className="size-4" />
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0">
           <SheetHeader className="border-b border-border px-4 py-4 text-left">
             <SheetTitle>Navigation</SheetTitle>
           </SheetHeader>
-          <nav className="flex flex-col gap-1 p-3" aria-label="Mobile">
+          <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Mobile">
             {navItems.map(({ href, label, icon: Icon }) => {
               const active =
-                href === "/jobs/new"
-                  ? pathname === "/jobs/new"
-                  : href === "/jobs"
-                    ? pathname === "/jobs" ||
-                      (pathname.startsWith("/jobs/") && pathname !== "/jobs/new")
-                    : pathname === href;
+                href === "/"
+                  ? pathname === "/"
+                  : pathname === href || pathname.startsWith(`${href}/`);
 
               return (
                 <Link
@@ -67,6 +65,19 @@ export function MobileNav() {
               );
             })}
           </nav>
+          <div className="border-t border-border p-3">
+            <Link
+              href="/settings"
+              onClick={() => setOpen(false)}
+              className={cn(
+                "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium",
+                pathname === "/settings" ? "bg-muted" : "hover:bg-muted/60",
+              )}
+            >
+              <Settings className="size-4" aria-hidden />
+              Settings
+            </Link>
+          </div>
         </SheetContent>
       </Sheet>
     </div>

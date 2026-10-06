@@ -11,7 +11,7 @@ export default function NotFound() {
         The page you requested doesn&apos;t exist. Head back to Today to see what
         needs attention.
       </p>
-      <Link href="/today" className={cn(buttonVariants())}>
+      <Link href="/" className={cn(buttonVariants())}>
         Go to Today
       </Link>
     </div>

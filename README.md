@@ -34,7 +34,7 @@ npm run db:seed
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The app redirects to **Today**.
+Open [http://localhost:3000](http://localhost:3000). The home route is the **Today** dashboard.
 
 ### Useful scripts
 
