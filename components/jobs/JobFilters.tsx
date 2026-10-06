@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import type { JobStatus } from "@prisma/client";
 
@@ -23,6 +23,12 @@ export function JobFilters() {
   const q = searchParams.get("q") ?? "";
   const status = searchParams.get("status") ?? "";
   const followUp = searchParams.get("followUp") ?? "";
+  const [query, setQuery] = useState(q);
+  const debounceRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setQuery(q);
+  }, [q]);
 
   function updateParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -43,9 +49,16 @@ export function JobFilters() {
       <Input
         type="search"
         placeholder="Search customer, company, or job…"
-        defaultValue={q}
+        value={query}
         aria-label="Search jobs"
-        onChange={(event) => updateParam("q", event.target.value)}
+        onChange={(event) => {
+          const value = event.target.value;
+          setQuery(value);
+          if (debounceRef.current) {
+            window.clearTimeout(debounceRef.current);
+          }
+          debounceRef.current = window.setTimeout(() => updateParam("q", value), 250);
+        }}
       />
       <select
         aria-label="Filter by status"

@@ -16,7 +16,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-full w-56 shrink-0 flex-col border-r border-border bg-sidebar text-sidebar-foreground">
+    <aside className="hidden h-full w-56 shrink-0 flex-col border-r border-border bg-sidebar text-sidebar-foreground md:flex">
       <div className="flex items-center gap-2 border-b border-sidebar-border px-4 py-5">
         <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Wrench className="size-5" aria-hidden />

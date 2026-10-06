@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect } from "react";
+import { toast } from "sonner";
 
 import type { Job } from "@prisma/client";
 
@@ -32,7 +34,15 @@ export function JobForm({ job, mode }: JobFormProps) {
       ? createJob.bind(null)
       : updateJob.bind(null, job!.id);
 
+  const router = useRouter();
   const [state, formAction, pending] = useActionState(action, initialState);
+
+  useEffect(() => {
+    if (state.ok && mode === "edit") {
+      toast.success(state.message ?? "Job updated.");
+      router.refresh();
+    }
+  }, [state, mode, router]);
 
   const defaultFollowUp =
     job?.nextFollowUp != null

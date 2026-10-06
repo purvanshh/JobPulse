@@ -1,15 +1,10 @@
-import Link from "next/link";
-
 import type { Job } from "@prisma/client";
 
-import { JobStatusBadge } from "@/components/jobs/JobStatusBadge";
-import { formatDate } from "@/lib/dates";
-import { JOB_SOURCE_LABELS } from "@/types";
+import { JobTableRow } from "@/components/jobs/JobTableRow";
 
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -17,7 +12,7 @@ import {
 
 export function JobTable({ jobs }: { jobs: Job[] }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border">
+    <div className="overflow-x-auto rounded-lg border border-border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -33,33 +28,7 @@ export function JobTable({ jobs }: { jobs: Job[] }) {
         </TableHeader>
         <TableBody>
           {jobs.map((job) => (
-            <TableRow key={job.id}>
-              <TableCell className="font-medium">{job.customerName}</TableCell>
-              <TableCell className="hidden lg:table-cell text-muted-foreground">
-                {job.company ?? "—"}
-              </TableCell>
-              <TableCell className="max-w-xs truncate">{job.jobDescription}</TableCell>
-              <TableCell>
-                <JobStatusBadge status={job.status} />
-              </TableCell>
-              <TableCell className="hidden md:table-cell">
-                {formatDate(job.nextFollowUp)}
-              </TableCell>
-              <TableCell className="hidden xl:table-cell">
-                {JOB_SOURCE_LABELS[job.source]}
-              </TableCell>
-              <TableCell className="hidden xl:table-cell text-muted-foreground">
-                {formatDate(job.createdAt)}
-              </TableCell>
-              <TableCell className="text-right">
-                <Link
-                  href={`/jobs/${job.id}`}
-                  className="text-sm font-medium text-primary hover:underline"
-                >
-                  Open
-                </Link>
-              </TableCell>
-            </TableRow>
+            <JobTableRow key={job.id} job={job} />
           ))}
         </TableBody>
       </Table>
