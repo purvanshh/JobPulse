@@ -15,13 +15,13 @@ const items = [
 export function SummaryMetrics(props: SummaryMetricsProps) {
   return (
     <section
-      className="grid grid-cols-2 gap-4 lg:grid-cols-4"
+      className="grid min-w-0 grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4"
       data-purpose="metrics-grid"
     >
       {items.map((item) => (
         <div
           key={item.key}
-          className="flex flex-col justify-between rounded-lg border border-nt-border bg-nt-surface p-4"
+          className="flex min-w-0 flex-col justify-between rounded-lg border border-nt-border bg-nt-surface p-4"
         >
           <span
             className={`font-mono text-[10px] font-semibold tracking-wider uppercase ${

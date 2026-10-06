@@ -7,7 +7,7 @@ import { formatRelativeDay } from "@/lib/dates";
 
 export function UpcomingFollowUps({ jobs }: { jobs: Job[] }) {
   return (
-    <section className="space-y-4 rounded-lg border border-nt-border bg-nt-surface p-6">
+    <section className="min-w-0 space-y-4 rounded-lg border border-nt-border bg-nt-surface p-4 sm:p-6">
       <div className="flex items-baseline justify-between border-b border-nt-border pb-4">
         <div>
           <h3 className="font-display text-base font-bold tracking-tight text-white">
@@ -35,7 +35,7 @@ export function UpcomingFollowUps({ jobs }: { jobs: Job[] }) {
           {jobs.map((job) => (
             <div
               key={job.id}
-              className="flex items-center justify-between gap-4 py-3 first:pt-1 last:pb-1"
+              className="flex min-w-0 flex-col gap-1 py-3 first:pt-1 last:pb-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
             >
               <div className="min-w-0">
                 <span className="block font-mono text-[10px] font-medium tracking-widest text-nt-secondary uppercase">
@@ -51,7 +51,7 @@ export function UpcomingFollowUps({ jobs }: { jobs: Job[] }) {
                   <p className="text-xs text-nt-secondary">{job.company}</p>
                 ) : null}
               </div>
-              <p className="max-w-[14rem] text-right text-xs font-normal text-neutral-300">
+              <p className="min-w-0 text-xs font-normal text-neutral-300 sm:max-w-[14rem] sm:text-right">
                 {job.jobDescription}
               </p>
             </div>

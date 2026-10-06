@@ -16,7 +16,7 @@ export function PipelineSummary({
   counts: Record<JobStatus, number>;
 }) {
   return (
-    <section className="space-y-4 rounded-lg border border-nt-border bg-nt-surface p-6">
+    <section className="min-w-0 space-y-4 rounded-lg border border-nt-border bg-nt-surface p-4 sm:p-6">
       <div className="border-b border-nt-border pb-4">
         <h3 className="font-display text-base font-bold tracking-tight text-white">
           Pipeline

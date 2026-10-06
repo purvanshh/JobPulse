@@ -12,7 +12,7 @@ export function NeedsAttention({ jobs }: { jobs: JobWithActivity[] }) {
 
   return (
     <section
-      className="space-y-6 rounded-lg border border-nt-border bg-nt-surface p-6"
+      className="min-w-0 space-y-6 rounded-lg border border-nt-border bg-nt-surface p-4 sm:p-6"
       data-purpose="needs-attention"
     >
       <div className="border-b border-nt-border pb-5">

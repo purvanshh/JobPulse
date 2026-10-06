@@ -12,7 +12,7 @@ export function AttentionSummary({ overdue, dueToday }: AttentionSummaryProps) {
 
     return (
       <section
-        className="flex items-center gap-2.5 rounded-[4px] border border-nt-red-border bg-nt-red-subtle px-4 py-2.5"
+        className="flex min-w-0 items-center gap-2.5 rounded-[4px] border border-nt-red-border bg-nt-red-subtle px-4 py-2.5"
         role="status"
         data-purpose="system-alert"
       >

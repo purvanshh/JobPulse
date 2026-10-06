@@ -25,11 +25,11 @@ export function JobAttentionCard({ job }: { job: JobWithActivity }) {
   return (
     <article
       className={cn(
-        "flex flex-col justify-between gap-4 rounded-md border border-nt-border bg-nt-card p-4 transition-colors md:flex-row md:items-center",
+        "flex min-w-0 max-w-full flex-col justify-between gap-4 rounded-md border border-nt-border bg-nt-card p-4 transition-colors md:flex-row md:items-center",
         isOverdue ? "hover:border-nt-red-border" : "hover:border-nt-amber-border",
       )}
     >
-      <div className="min-w-[280px] space-y-1.5">
+      <div className="min-w-0 space-y-1.5">
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-sm font-semibold tracking-tight text-white">
             {job.customerName}
@@ -40,13 +40,13 @@ export function JobAttentionCard({ job }: { job: JobWithActivity }) {
           <p className="text-xs font-medium text-nt-muted">{job.company}</p>
         ) : null}
         <p className="text-xs font-normal text-neutral-300">{job.jobDescription}</p>
-        <div className="flex items-center gap-2 pt-0.5">
+        <div className="flex flex-wrap items-center gap-2 pt-0.5">
           <FollowUpStateBadge job={job} />
           <span className="font-mono text-[11px] text-nt-secondary">
             Follow-up {formatDate(job.nextFollowUp)}
           </span>
         </div>
-        <div className="flex items-center gap-3 pt-0.5">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-0.5">
           <span
             className={cn(
               "font-mono text-xs font-bold tracking-wide uppercase",
@@ -63,7 +63,7 @@ export function JobAttentionCard({ job }: { job: JobWithActivity }) {
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 self-start md:self-center">
+      <div className="flex w-full min-w-0 flex-wrap items-center gap-2 self-start md:w-auto md:self-center">
         {callHref ? (
           <a href={callHref} className={cn(ghostAction, "inline-flex items-center")}>
             Call

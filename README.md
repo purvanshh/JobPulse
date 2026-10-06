@@ -18,6 +18,8 @@ JobPulse centers on a **Today** dashboard:
 
 ## Demo (about 60 seconds)
 
+Live demo: [https://job-pulse-smoky-nine.vercel.app/](https://job-pulse-smoky-nine.vercel.app/)
+
 1. Open **Today** and read the attention summary  
 2. Open an overdue or due-today job card  
 3. Use the primary action (for example **Follow Up on Quote**)  
