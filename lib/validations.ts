@@ -4,10 +4,7 @@ import { JOB_SOURCES, JOB_STATUSES } from "@/types";
 
 const dateInputSchema = z
   .string()
-  .min(1, "Follow-up date is required.")
-  .refine((value) => !Number.isNaN(Date.parse(value)), {
-    message: "Enter a valid follow-up date.",
-  });
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid follow-up date.");
 
 export const jobFormSchema = z.object({
   customerName: z.string().trim().min(1, "Customer name is required."),

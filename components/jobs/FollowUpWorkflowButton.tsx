@@ -81,7 +81,8 @@ export function FollowUpWorkflowButton({ job }: { job: JobWithActivity }) {
             <DialogHeader>
               <DialogTitle>{actionLabel}</DialogTitle>
               <DialogDescription>
-                Review the details, then mark contacted when you&apos;re done.
+                Review the job, contact the customer if needed, then record the
+                outcome. Marking contacted does not change job status.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3 text-sm">
@@ -150,7 +151,9 @@ export function FollowUpWorkflowButton({ job }: { job: JobWithActivity }) {
               startTransition(async () => {
                 const result = await markJobContacted(job.id, formData);
                 if (result.ok) {
-                  toast.success("Contact recorded. Next follow-up set.");
+                  toast.success(
+                    "Contact recorded. Next follow-up set. Status unchanged.",
+                  );
                   setOpen(false);
                   reset();
                   router.refresh();
@@ -162,9 +165,10 @@ export function FollowUpWorkflowButton({ job }: { job: JobWithActivity }) {
             className="space-y-4"
           >
             <DialogHeader>
-              <DialogTitle>Next follow-up?</DialogTitle>
+              <DialogTitle>Set next follow-up</DialogTitle>
               <DialogDescription>
-                Choose when Denise should check in again.
+                Status stays the same. Choose when this job should come back to
+                Needs Attention.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-2">

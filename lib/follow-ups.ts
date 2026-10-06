@@ -28,7 +28,7 @@ export function getRecommendedAction(status: JobStatus): string {
     case "NEW":
       return "Contact Customer";
     case "WAITING_ON_QUOTE":
-      return "Send Quote";
+      return "Follow Up on Quote";
     case "WAITING_ON_CUSTOMER":
       return "Follow Up";
     case "SCHEDULED":

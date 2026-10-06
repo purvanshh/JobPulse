@@ -311,14 +311,16 @@ JobPulse should infer the most useful next action from the job status.
 | Status | Recommended Action |
 |---|---|
 | New | Contact Customer |
-| Waiting on Quote | Send Quote |
+| Waiting on Quote | Follow Up on Quote |
 | Waiting on Customer | Follow Up |
-| Scheduled | View Job / Check Schedule |
+| Scheduled | View Job |
 | Done | No Action |
 
 This is deterministic product logic rather than AI.
 
 The system should not introduce AI merely for the sake of adding an AI feature.
+
+**Important:** Recommended actions open an in-app follow-up workflow. JobPulse does **not** send quotes, emails, or SMS.
 
 ---
 

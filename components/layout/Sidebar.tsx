@@ -62,7 +62,7 @@ export function Sidebar() {
           )}
         >
           <Settings className="size-4 shrink-0" aria-hidden />
-          Settings
+          Prototype notes
         </Link>
       </div>
     </aside>

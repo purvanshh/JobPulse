@@ -45,7 +45,8 @@ export function MarkContactedButton({ jobId }: { jobId: string }) {
         <DialogHeader>
           <DialogTitle>Mark contacted</DialogTitle>
           <DialogDescription>
-            Record the conversation and schedule the next follow-up.
+            Record the conversation and schedule the next follow-up. Job status
+            stays the same until you change it.
           </DialogDescription>
         </DialogHeader>
         <form

@@ -44,18 +44,20 @@ export async function createJob(
   let jobId: string;
 
   try {
-    const job = await prisma.job.create({
-      data: mapFormToJobData(parsed.data),
+    const result = await prisma.$transaction(async (tx) => {
+      const job = await tx.job.create({
+        data: mapFormToJobData(parsed.data),
+      });
+      await tx.activity.create({
+        data: {
+          jobId: job.id,
+          type: "NOTE",
+          note: "Job created.",
+        },
+      });
+      return job;
     });
-    jobId = job.id;
-
-    await prisma.activity.create({
-      data: {
-        jobId: job.id,
-        type: "NOTE",
-        note: "Job created.",
-      },
-    });
+    jobId = result.id;
   } catch {
     return {
       ok: false,
@@ -83,6 +85,11 @@ export async function updateJob(
   }
 
   try {
+    const existing = await prisma.job.findUnique({ where: { id } });
+    if (!existing) {
+      return { ok: false, message: "Job not found." };
+    }
+
     await prisma.job.update({
       where: { id },
       data: mapFormToJobData(parsed.data),
@@ -100,6 +107,11 @@ export async function updateJob(
 
 export async function deleteJob(id: string): Promise<ActionResult> {
   try {
+    const existing = await prisma.job.findUnique({ where: { id } });
+    if (!existing) {
+      return { ok: false, message: "Job not found." };
+    }
+
     await prisma.job.delete({ where: { id } });
   } catch {
     return {
@@ -165,11 +177,22 @@ export async function markJobContacted(
     nextFollowUp = addDaysFromToday(3);
   } else if (preset === "next_week") {
     nextFollowUp = addDaysFromToday(7);
-  } else if (preset === "custom" && customDate) {
+  } else if (preset === "custom") {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(customDate)) {
+      return {
+        ok: false,
+        message: "Choose a valid custom follow-up date.",
+      };
+    }
     nextFollowUp = parseDateInput(customDate);
   }
 
   try {
+    const existing = await prisma.job.findUnique({ where: { id: jobId } });
+    if (!existing) {
+      return { ok: false, message: "Job not found." };
+    }
+
     await prisma.$transaction([
       prisma.job.update({
         where: { id: jobId },
@@ -198,7 +221,19 @@ export async function setJobFollowUp(
   jobId: string,
   dateValue: string,
 ): Promise<ActionResult> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    return {
+      ok: false,
+      message: "Choose a valid follow-up date.",
+    };
+  }
+
   try {
+    const existing = await prisma.job.findUnique({ where: { id: jobId } });
+    if (!existing) {
+      return { ok: false, message: "Job not found." };
+    }
+
     await prisma.job.update({
       where: { id: jobId },
       data: { nextFollowUp: parseDateInput(dateValue) },

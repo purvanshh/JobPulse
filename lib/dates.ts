@@ -1,6 +1,10 @@
 import { differenceInCalendarDays, format, isSameDay, startOfDay } from "date-fns";
 
 export function toDateOnly(value: Date | string): Date {
+  // Parse calendar dates as local days to avoid UTC midnight shifting the day.
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return parseDateInput(value);
+  }
   const date = typeof value === "string" ? new Date(value) : value;
   return startOfDay(date);
 }
@@ -37,8 +41,7 @@ export function parseDateInput(value: string): Date {
 }
 
 export function toDateInputValue(value: Date | string): string {
-  const date = typeof value === "string" ? new Date(value) : value;
-  return format(date, "yyyy-MM-dd");
+  return format(toDateOnly(value), "yyyy-MM-dd");
 }
 
 export function addDaysFromToday(days: number): Date {

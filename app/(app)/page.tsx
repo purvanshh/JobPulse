@@ -31,15 +31,19 @@ export default async function TodayPage() {
           overdue={metrics.overdue}
           dueToday={metrics.followUpsToday}
         />
+
+        {/* Actionable work first — metrics stay secondary. */}
         <NeedsAttention jobs={attention} />
-        <SummaryMetrics
-          followUpsToday={metrics.followUpsToday}
-          overdue={metrics.overdue}
-          openJobs={metrics.openJobs}
-          scheduled={metrics.scheduled}
-        />
-        <div className="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
-          <UpcomingFollowUps jobs={upcoming} />
+
+        <UpcomingFollowUps jobs={upcoming} />
+
+        <div className="grid gap-8 xl:grid-cols-[1fr_0.85fr] xl:items-start">
+          <SummaryMetrics
+            followUpsToday={metrics.followUpsToday}
+            overdue={metrics.overdue}
+            openJobs={metrics.openJobs}
+            scheduled={metrics.scheduled}
+          />
           <PipelineSummary counts={pipeline} />
         </div>
       </div>

@@ -5,10 +5,10 @@ import { ActivityTimeline } from "@/components/jobs/ActivityTimeline";
 import { ChangeFollowUpButton } from "@/components/jobs/ChangeFollowUpButton";
 import { DeleteJobButton } from "@/components/jobs/DeleteJobButton";
 import { FollowUpStateBadge } from "@/components/jobs/FollowUpStateBadge";
+import { FollowUpWorkflowButton } from "@/components/jobs/FollowUpWorkflowButton";
 import { JobForm } from "@/components/jobs/JobForm";
 import { JobStatusBadge } from "@/components/jobs/JobStatusBadge";
 import { JobStatusSelect } from "@/components/jobs/JobStatusSelect";
-import { MarkContactedButton } from "@/components/jobs/MarkContactedButton";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { formatDate, formatLongDate } from "@/lib/dates";
 import {
@@ -17,7 +17,9 @@ import {
   getRecommendedAction,
 } from "@/lib/follow-ups";
 import { getJobById } from "@/lib/jobs";
+import { buttonVariants } from "@/components/ui/button";
 import { JOB_SOURCE_LABELS } from "@/types";
+import { cn } from "@/lib/utils";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -36,6 +38,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
 
   const activities = await getJobActivities(id);
   const recommended = getRecommendedAction(job.status);
+  const callHref = job.phone ? `tel:${job.phone.replace(/\s/g, "")}` : null;
 
   return (
     <>
@@ -44,15 +47,21 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         description={job.jobDescription}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            {job.phone ? (
+            {job.status !== "DONE" && job.status !== "SCHEDULED" ? (
+              <FollowUpWorkflowButton job={{ ...job, activities: activities.slice(0, 1) }} />
+            ) : (
+              <span className="text-sm text-muted-foreground">{recommended}</span>
+            )}
+            {callHref ? (
               <a
-                href={`tel:${job.phone.replace(/\s/g, "")}`}
-                className="inline-flex h-9 items-center rounded-md border border-input px-3 text-sm font-medium hover:bg-muted"
+                href={callHref}
+                className={cn(buttonVariants({ variant: "outline" }))}
               >
                 Call
               </a>
-            ) : null}
-            <MarkContactedButton jobId={job.id} />
+            ) : (
+              <span className="text-sm text-muted-foreground">No phone number</span>
+            )}
             <ChangeFollowUpButton jobId={job.id} label="Change follow-up" />
             <JobStatusSelect jobId={job.id} status={job.status} />
             <DeleteJobButton jobId={job.id} />
@@ -60,37 +69,92 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         }
       />
       <div className="flex flex-1 flex-col gap-6 p-6">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Customer</CardTitle>
+              <CardTitle className="text-base">Who</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
+              <p>
+                <span className="text-muted-foreground">Customer:</span>{" "}
+                {job.customerName}
+              </p>
               <p>
                 <span className="text-muted-foreground">Company:</span>{" "}
                 {job.company ?? "—"}
               </p>
               <p>
                 <span className="text-muted-foreground">Phone:</span>{" "}
-                {job.phone ? (
-                  <a href={`tel:${job.phone}`} className="text-primary hover:underline">
+                {callHref ? (
+                  <a href={callHref} className="text-primary hover:underline">
                     {job.phone}
                   </a>
                 ) : (
-                  "—"
+                  "No phone number"
                 )}
               </p>
             </CardContent>
           </Card>
+
+          <Card className="border-primary/20 bg-muted/20">
+            <CardHeader>
+              <CardTitle className="text-base">What to do next</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Next follow-up
+                </p>
+                <p className="mt-1 text-lg font-semibold">
+                  {formatLongDate(job.nextFollowUp)}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <FollowUpStateBadge job={job} />
+                <JobStatusBadge status={job.status} />
+              </div>
+              <p className="font-medium">{getFollowUpDescription(job)}</p>
+              {recommended !== "No Action" ? (
+                <p>
+                  <span className="text-muted-foreground">Recommended:</span>{" "}
+                  <span className="font-medium text-primary">{recommended}</span>
+                </p>
+              ) : (
+                <p className="text-muted-foreground">No follow-up action needed.</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Job</CardTitle>
+              <CardTitle className="text-base">What</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
+              <p className="leading-relaxed">{job.jobDescription}</p>
               <p>
                 <span className="text-muted-foreground">Source:</span>{" "}
                 {JOB_SOURCE_LABELS[job.source]}
               </p>
+              {job.notes ? (
+                <div className="pt-2">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Notes
+                  </p>
+                  <p className="mt-1 whitespace-pre-wrap text-muted-foreground">
+                    {job.notes}
+                  </p>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Where it stands</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
               <p className="flex items-center gap-2">
                 <span className="text-muted-foreground">Status:</span>
                 <JobStatusBadge status={job.status} />
@@ -105,48 +169,11 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               </p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Follow-up</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Next follow-up
-                </p>
-                <p className="mt-1 text-base font-semibold">
-                  {formatLongDate(job.nextFollowUp)}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <FollowUpStateBadge job={job} />
-                <JobStatusBadge status={job.status} />
-              </div>
-              <p className="font-medium">{getFollowUpDescription(job)}</p>
-              {recommended !== "No Action" ? (
-                <p>
-                  <span className="text-muted-foreground">Recommended:</span>{" "}
-                  {recommended}
-                </p>
-              ) : null}
-            </CardContent>
-          </Card>
         </div>
-
-        {job.notes ? (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Notes</CardTitle>
-            </CardHeader>
-            <CardContent className="whitespace-pre-wrap text-sm text-muted-foreground">
-              {job.notes}
-            </CardContent>
-          </Card>
-        ) : null}
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Activity timeline</CardTitle>
+            <CardTitle className="text-base">What happened</CardTitle>
           </CardHeader>
           <CardContent>
             <ActivityTimeline activities={activities} />

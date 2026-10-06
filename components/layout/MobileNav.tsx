@@ -75,7 +75,7 @@ export function MobileNav() {
               )}
             >
               <Settings className="size-4" aria-hidden />
-              Settings
+              Prototype notes
             </Link>
           </div>
         </SheetContent>
