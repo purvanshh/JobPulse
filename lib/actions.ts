@@ -39,6 +39,13 @@ export async function createJob(
     const job = await prisma.job.create({
       data: mapFormToJobData(parsed.data),
     });
+    await prisma.activity.create({
+      data: {
+        jobId: job.id,
+        type: "NOTE",
+        note: "Job created.",
+      },
+    });
     revalidateJobPaths();
     redirect(`/jobs/${job.id}`);
   } catch {

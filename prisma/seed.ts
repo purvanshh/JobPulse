@@ -128,7 +128,29 @@ async function main() {
   ];
 
   for (const job of jobs) {
-    await prisma.job.create({ data: job });
+    const created = await prisma.job.create({ data: job });
+    await prisma.activity.create({
+      data: {
+        jobId: created.id,
+        type: "NOTE",
+        note: "Job created.",
+      },
+    });
+  }
+
+  const firstActive = await prisma.job.findFirst({
+    where: { status: { not: "DONE" } },
+    orderBy: { createdAt: "asc" },
+  });
+
+  if (firstActive) {
+    await prisma.activity.create({
+      data: {
+        jobId: firstActive.id,
+        type: "CONTACTED",
+        note: "Spoke with manager. Quote requested.",
+      },
+    });
   }
 }
 

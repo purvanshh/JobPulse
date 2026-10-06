@@ -2,6 +2,13 @@ import { z } from "zod";
 
 import { JOB_SOURCES, JOB_STATUSES } from "@/types";
 
+const dateInputSchema = z
+  .string()
+  .min(1, "Follow-up date is required.")
+  .refine((value) => !Number.isNaN(Date.parse(value)), {
+    message: "Enter a valid follow-up date.",
+  });
+
 export const jobFormSchema = z.object({
   customerName: z.string().trim().min(1, "Customer name is required."),
   company: z.string().trim().optional(),
@@ -9,7 +16,7 @@ export const jobFormSchema = z.object({
   jobDescription: z.string().trim().min(1, "Job description is required."),
   source: z.enum(JOB_SOURCES),
   status: z.enum(JOB_STATUSES),
-  nextFollowUp: z.string().min(1, "Follow-up date is required."),
+  nextFollowUp: dateInputSchema,
   notes: z.string().trim().optional(),
 });
 
