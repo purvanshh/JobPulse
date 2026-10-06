@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { addDaysFromToday, parseDateInput } from "@/lib/dates";
 import { prisma } from "@/lib/db";
+import { JOB_STATUS_LABELS } from "@/types";
 import {
   formatZodErrors,
   jobFormSchema,
@@ -19,10 +20,14 @@ export type ActionResult = {
 };
 
 function revalidateJobPaths(id?: string) {
-  revalidatePath("/");
-  revalidatePath("/jobs");
-  if (id) {
-    revalidatePath(`/jobs/${id}`);
+  try {
+    revalidatePath("/");
+    revalidatePath("/jobs");
+    if (id) {
+      revalidatePath(`/jobs/${id}`);
+    }
+  } catch {
+    // No-op outside a Next.js request context (scripts/tests).
   }
 }
 
@@ -128,21 +133,21 @@ export async function updateJobStatus(
               data: {
                 jobId: id,
                 type: "STATUS_CHANGED",
-                note: `Status changed to ${status.replaceAll("_", " ").toLowerCase()}.`,
+                note: `Status changed to ${JOB_STATUS_LABELS[status]}.`,
               },
             }),
           ]
         : []),
     ]);
-
-    revalidateJobPaths(id);
-    return { ok: true };
   } catch {
     return {
       ok: false,
       message: "Couldn't update the status. Please try again.",
     };
   }
+
+  revalidateJobPaths(id);
+  return { ok: true };
 }
 
 export async function markJobContacted(
@@ -178,14 +183,15 @@ export async function markJobContacted(
         },
       }),
     ]);
-    revalidateJobPaths(jobId);
-    return { ok: true, message: "Follow-up updated." };
   } catch {
     return {
       ok: false,
       message: "Couldn't record this contact. Please try again.",
     };
   }
+
+  revalidateJobPaths(jobId);
+  return { ok: true, message: "Follow-up updated." };
 }
 
 export async function setJobFollowUp(
@@ -197,40 +203,15 @@ export async function setJobFollowUp(
       where: { id: jobId },
       data: { nextFollowUp: parseDateInput(dateValue) },
     });
-    revalidateJobPaths(jobId);
-    return { ok: true };
   } catch {
     return {
       ok: false,
       message: "Couldn't update the follow-up date. Please try again.",
     };
   }
-}
 
-export async function addJobNoteActivity(
-  jobId: string,
-  note: string,
-): Promise<ActionResult> {
-  if (!note.trim()) {
-    return { ok: false, message: "Note cannot be empty." };
-  }
-
-  try {
-    await prisma.activity.create({
-      data: {
-        jobId,
-        type: "NOTE",
-        note: note.trim(),
-      },
-    });
-    revalidateJobPaths(jobId);
-    return { ok: true };
-  } catch {
-    return {
-      ok: false,
-      message: "Couldn't save this note. Please try again.",
-    };
-  }
+  revalidateJobPaths(jobId);
+  return { ok: true };
 }
 
 function mapFormToJobData(values: JobFormValues) {

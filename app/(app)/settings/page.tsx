@@ -12,19 +12,19 @@ export default function SettingsPage() {
     <>
       <PageHeader
         title="Settings"
-        description="Workspace preferences will live here in a later release."
+        description="JobPulse is ready to use without configuration."
       />
       <div className="flex flex-1 flex-col gap-6 p-6">
         <Card className="max-w-xl">
           <CardHeader>
-            <CardTitle>Coming soon</CardTitle>
+            <CardTitle>No setup required</CardTitle>
             <CardDescription>
-              Settings are intentionally out of scope for this prototype. Focus
-              stays on daily follow-ups and job status.
+              This prototype focuses on daily follow-ups and job status. Account
+              preferences and integrations are left for a later release.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            No configuration is required to use JobPulse today.
+            Use Today to see who needs a call, and Jobs to manage every request.
           </CardContent>
         </Card>
       </div>

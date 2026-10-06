@@ -53,7 +53,3 @@ export async function listJobs(filters: JobListFilters = {}) {
 export async function getJobById(id: string) {
   return prisma.job.findUnique({ where: { id } });
 }
-
-export async function countOpenJobs() {
-  return prisma.job.count({ where: { status: { not: "DONE" } } });
-}

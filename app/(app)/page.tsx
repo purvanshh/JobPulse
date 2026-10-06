@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AttentionSummary } from "@/components/dashboard/AttentionSummary";
 import { NeedsAttention } from "@/components/dashboard/NeedsAttention";
 import { PipelineSummary } from "@/components/dashboard/PipelineSummary";
 import { SummaryMetrics } from "@/components/dashboard/SummaryMetrics";
@@ -25,14 +26,18 @@ export default async function TodayPage() {
           </Link>
         }
       />
-      <div className="flex flex-1 flex-col gap-10 p-6">
+      <div className="flex flex-1 flex-col gap-8 p-6">
+        <AttentionSummary
+          overdue={metrics.overdue}
+          dueToday={metrics.followUpsToday}
+        />
+        <NeedsAttention jobs={attention} />
         <SummaryMetrics
           followUpsToday={metrics.followUpsToday}
           overdue={metrics.overdue}
           openJobs={metrics.openJobs}
           scheduled={metrics.scheduled}
         />
-        <NeedsAttention jobs={attention} />
         <div className="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
           <UpcomingFollowUps jobs={upcoming} />
           <PipelineSummary counts={pipeline} />
