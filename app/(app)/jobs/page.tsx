@@ -21,6 +21,47 @@ type JobsPageProps = {
   }>;
 };
 
+function emptyCopy(filters: {
+  q?: string;
+  status?: string;
+  followUp?: string;
+}) {
+  if (filters.followUp === "overdue") {
+    return {
+      title: "No overdue jobs",
+      description: "Nothing has slipped past its follow-up date.",
+    };
+  }
+  if (filters.followUp === "today") {
+    return {
+      title: "You're all caught up.",
+      description: "No follow-ups are due today.",
+    };
+  }
+  if (filters.followUp === "upcoming") {
+    return {
+      title: "No upcoming follow-ups",
+      description: "Schedule a next follow-up on a job to see it here.",
+    };
+  }
+  if (filters.followUp === "none") {
+    return {
+      title: "No completed jobs yet",
+      description: "Jobs marked Done show up here when follow-up is finished.",
+    };
+  }
+  if (filters.q || filters.status) {
+    return {
+      title: "No jobs match your search.",
+      description: "Try adjusting your search or filters.",
+    };
+  }
+  return {
+    title: "No jobs yet.",
+    description: "Add your first job to start tracking follow-ups.",
+  };
+}
+
 export default async function JobsPage({ searchParams }: JobsPageProps) {
   const params = await searchParams;
   const filters: JobListFilters = {
@@ -31,6 +72,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
 
   const jobs = await listJobs(filters);
   const hasFilters = Boolean(params.q || params.status || params.followUp);
+  const empty = emptyCopy(params);
 
   return (
     <>
@@ -47,18 +89,14 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         <Suspense fallback={null}>
           <JobsFlashToast />
         </Suspense>
-        <Suspense fallback={<div className="h-9 rounded-md bg-muted" />}>
+        <Suspense fallback={<div className="h-9 rounded-md bg-muted" aria-hidden />}>
           <JobFilters />
         </Suspense>
 
         {jobs.length === 0 ? (
           <EmptyState
-            title={hasFilters ? "No jobs match your search." : "No jobs yet."}
-            description={
-              hasFilters
-                ? "Try adjusting your search or filters."
-                : "Add your first job to start tracking follow-ups."
-            }
+            title={empty.title}
+            description={empty.description}
             action={
               !hasFilters ? (
                 <Link href="/jobs/new" className={cn(buttonVariants())}>

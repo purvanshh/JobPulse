@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import type { Job } from "@prisma/client";
@@ -15,7 +16,7 @@ import {
   JOB_STATUSES,
 } from "@/types";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,12 +31,12 @@ const initialState: ActionResult = { ok: false };
 
 export function JobForm({ job, mode }: JobFormProps) {
   const action =
-    mode === "create"
-      ? createJob.bind(null)
-      : updateJob.bind(null, job!.id);
+    mode === "create" ? createJob.bind(null) : updateJob.bind(null, job!.id);
 
   const router = useRouter();
   const [state, formAction, pending] = useActionState(action, initialState);
+  const [formKey, setFormKey] = useState(0);
+  const [dismissedCreateId, setDismissedCreateId] = useState<string | null>(null);
 
   useEffect(() => {
     if (state.ok && mode === "edit") {
@@ -44,15 +45,63 @@ export function JobForm({ job, mode }: JobFormProps) {
     }
   }, [state, mode, router]);
 
+  useEffect(() => {
+    if (state.ok && mode === "create" && state.jobId) {
+      toast.success("Job created.");
+    }
+  }, [state.ok, state.jobId, mode]);
+
+  const createdJobId =
+    mode === "create" && state.ok && state.jobId && state.jobId !== dismissedCreateId
+      ? state.jobId
+      : null;
+
   const defaultFollowUp =
     job?.nextFollowUp != null
       ? toDateInputValue(job.nextFollowUp)
       : toDateInputValue(addDaysFromToday(0));
 
+  if (createdJobId) {
+    return (
+      <div className="space-y-6 rounded-xl border border-border bg-muted/20 p-6">
+        <div>
+          <h2 className="text-lg font-semibold">Job saved</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            The request is in your list and will show on Today if follow-up is due.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link href={`/jobs/${createdJobId}`} className={cn(buttonVariants())}>
+            View job
+          </Link>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setDismissedCreateId(createdJobId);
+              setFormKey((value) => value + 1);
+            }}
+          >
+            Add another
+          </Button>
+          <Link
+            href="/jobs"
+            className={cn(buttonVariants({ variant: "ghost" }))}
+          >
+            Back to jobs
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <form action={formAction} className="space-y-8">
-      {state.message ? (
-        <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+    <form key={formKey} action={formAction} className="space-y-8">
+      {state.message && !state.ok ? (
+        <p
+          role="alert"
+          className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        >
           {state.message}
         </p>
       ) : null}
@@ -73,6 +122,7 @@ export function JobForm({ job, mode }: JobFormProps) {
               name="customerName"
               defaultValue={job?.customerName ?? ""}
               required
+              autoFocus={mode === "create"}
             />
           </Field>
           <Field id="company" label="Company" error={state.fieldErrors?.company}>
@@ -102,7 +152,7 @@ export function JobForm({ job, mode }: JobFormProps) {
           <Textarea
             id="jobDescription"
             name="jobDescription"
-            rows={4}
+            rows={3}
             defaultValue={job?.jobDescription ?? ""}
             required
           />
@@ -158,13 +208,22 @@ export function JobForm({ job, mode }: JobFormProps) {
           Notes
         </h2>
         <Field id="notes" label="Notes" error={state.fieldErrors?.notes}>
-          <Textarea id="notes" name="notes" rows={4} defaultValue={job?.notes ?? ""} />
+          <Textarea
+            id="notes"
+            name="notes"
+            rows={3}
+            defaultValue={job?.notes ?? ""}
+          />
         </Field>
       </section>
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={pending}>
-          {pending ? "Saving…" : mode === "create" ? "Create job" : "Save changes"}
+          {pending
+            ? "Saving…"
+            : mode === "create"
+              ? "Create job"
+              : "Save changes"}
         </Button>
       </div>
     </form>

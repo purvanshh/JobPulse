@@ -9,10 +9,11 @@ import { Input } from "@/components/ui/input";
 import { JOB_STATUS_LABELS, JOB_STATUSES } from "@/types";
 
 const followUpFilters = [
-  { value: "", label: "All follow-ups" },
+  { value: "", label: "All" },
   { value: "overdue", label: "Overdue" },
   { value: "today", label: "Due today" },
   { value: "upcoming", label: "Upcoming" },
+  { value: "none", label: "No follow-up" },
 ] as const;
 
 export function JobFilters() {

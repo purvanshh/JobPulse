@@ -15,6 +15,7 @@ export type ActionResult = {
   ok: boolean;
   message?: string;
   fieldErrors?: Record<string, string>;
+  jobId?: string;
 };
 
 function revalidateJobPaths(id?: string) {
@@ -58,7 +59,11 @@ export async function createJob(
   }
 
   revalidateJobPaths(jobId);
-  redirect("/jobs?created=1");
+  return {
+    ok: true,
+    jobId,
+    message: "Job created.",
+  };
 }
 
 export async function updateJob(

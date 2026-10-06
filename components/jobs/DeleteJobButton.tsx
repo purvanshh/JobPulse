@@ -31,7 +31,7 @@ export function DeleteJobButton({ jobId }: { jobId: string }) {
         <AlertDialogHeader>
           <AlertDialogTitle>Delete this job?</AlertDialogTitle>
           <AlertDialogDescription>
-            This removes the job from your workspace. This action cannot be undone.
+            All job information and activity history will be permanently removed.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -45,7 +45,7 @@ export function DeleteJobButton({ jobId }: { jobId: string }) {
               })
             }
           >
-            {pending ? "Deleting…" : "Delete"}
+            {pending ? "Deleting…" : "Delete job"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

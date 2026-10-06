@@ -1,6 +1,8 @@
 import Link from "next/link";
 
+import { buttonVariants } from "@/components/ui/button";
 import { JOB_STATUS_LABELS, type JobStatus } from "@/types";
+import { cn } from "@/lib/utils";
 
 const pipelineOrder: JobStatus[] = [
   "NEW",
@@ -20,23 +22,31 @@ export function PipelineSummary({
       <div>
         <h2 className="text-lg font-semibold">Pipeline</h2>
         <p className="text-sm text-muted-foreground">
-          Where active jobs sit across the workflow.
+          Where every job currently stands.
         </p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-2">
         {pipelineOrder.map((status) => (
           <Link
             key={status}
             href={`/jobs?status=${status}`}
-            className="rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:bg-muted/40"
+            className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:bg-muted/40"
           >
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="text-sm font-medium">
               {JOB_STATUS_LABELS[status]}
-            </p>
-            <p className="mt-1 text-2xl font-semibold">{counts[status]}</p>
+            </span>
+            <span className="text-xl font-semibold tabular-nums">
+              {counts[status]}
+            </span>
           </Link>
         ))}
       </div>
+      <Link
+        href="/jobs"
+        className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "px-0")}
+      >
+        View all jobs
+      </Link>
     </section>
   );
 }

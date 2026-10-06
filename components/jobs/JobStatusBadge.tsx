@@ -11,8 +11,8 @@ const statusStyles: Record<JobStatus, string> = {
   WAITING_ON_CUSTOMER:
     "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-100",
   SCHEDULED:
-    "bg-violet-100 text-violet-900 dark:bg-violet-950 dark:text-violet-100",
-  DONE: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100",
+    "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100",
+  DONE: "bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-200",
 };
 
 export function JobStatusBadge({

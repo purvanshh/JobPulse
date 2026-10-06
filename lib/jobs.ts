@@ -6,7 +6,7 @@ import { toDateOnly } from "@/lib/dates";
 export type JobListFilters = {
   q?: string;
   status?: JobStatus;
-  followUp?: "overdue" | "today" | "upcoming";
+  followUp?: "overdue" | "today" | "upcoming" | "none";
 };
 
 export async function listJobs(filters: JobListFilters = {}) {
@@ -27,8 +27,10 @@ export async function listJobs(filters: JobListFilters = {}) {
     where.status = filters.status;
   }
 
-  if (filters.followUp) {
-    where.status = { not: "DONE" };
+  if (filters.followUp === "none") {
+    where.status = "DONE";
+  } else if (filters.followUp) {
+    where.status = filters.status ?? { not: "DONE" };
     if (filters.followUp === "overdue") {
       where.nextFollowUp = { lt: today };
     } else if (filters.followUp === "today") {

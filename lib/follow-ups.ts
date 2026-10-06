@@ -32,7 +32,7 @@ export function getRecommendedAction(status: JobStatus): string {
     case "WAITING_ON_CUSTOMER":
       return "Follow Up";
     case "SCHEDULED":
-      return "Check Schedule";
+      return "View Job";
     case "DONE":
       return "No Action";
     default:
@@ -117,7 +117,7 @@ export function compareAttentionJobs(a: Job, b: Job): number {
   return a.createdAt.getTime() - b.createdAt.getTime();
 }
 
-export function getAttentionJobs(jobs: Job[]): Job[] {
+export function getAttentionJobs<T extends Job>(jobs: T[]): T[] {
   return jobs
     .filter((job) => {
       const state = getFollowUpState(job);
@@ -126,7 +126,7 @@ export function getAttentionJobs(jobs: Job[]): Job[] {
     .sort(compareAttentionJobs);
 }
 
-export function getUpcomingFollowUps(jobs: Job[], limit = 5): Job[] {
+export function getUpcomingFollowUps<T extends Job>(jobs: T[], limit = 5): T[] {
   return jobs
     .filter((job) => getFollowUpState(job) === "UPCOMING")
     .sort((a, b) => a.nextFollowUp.getTime() - b.nextFollowUp.getTime())
@@ -135,6 +135,12 @@ export function getUpcomingFollowUps(jobs: Job[], limit = 5): Job[] {
 
 export async function getDashboardJobs() {
   const jobs = await prisma.job.findMany({
+    include: {
+      activities: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
+    },
     orderBy: [{ nextFollowUp: "asc" }, { createdAt: "asc" }],
   });
 

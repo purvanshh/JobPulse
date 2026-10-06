@@ -69,6 +69,7 @@ export function MarkContactedButton({ jobId }: { jobId: string }) {
               id={`note-${jobId}`}
               name="note"
               rows={3}
+              autoFocus
               placeholder="Spoke with manager. Quote requested."
             />
           </div>

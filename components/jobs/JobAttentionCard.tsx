@@ -1,36 +1,39 @@
-import Link from "next/link";
-
-import type { Job } from "@prisma/client";
+import type { Activity, Job } from "@prisma/client";
 
 import { ChangeFollowUpButton } from "@/components/jobs/ChangeFollowUpButton";
 import { FollowUpStateBadge } from "@/components/jobs/FollowUpStateBadge";
-import { JobStatusBadge } from "@/components/jobs/JobStatusBadge";
-import { MarkContactedButton } from "@/components/jobs/MarkContactedButton";
-import { buttonVariants } from "@/components/ui/button";
+import { FollowUpWorkflowButton } from "@/components/jobs/FollowUpWorkflowButton";
+import { JobStatusSelect } from "@/components/jobs/JobStatusSelect";
 import { formatDate } from "@/lib/dates";
-import {
-  getFollowUpUrgencyLabel,
-  getRecommendedAction,
-} from "@/lib/follow-ups";
+import { getFollowUpUrgencyLabel } from "@/lib/follow-ups";
 import { cn } from "@/lib/utils";
 
-export function JobAttentionCard({ job }: { job: Job }) {
+type JobWithActivity = Job & { activities?: Activity[] };
+
+export function JobAttentionCard({ job }: { job: JobWithActivity }) {
   const callHref = job.phone ? `tel:${job.phone.replace(/\s/g, "")}` : null;
-  const action = getRecommendedAction(job.status);
   const urgency = getFollowUpUrgencyLabel(job);
+  const isOverdue = urgency.toLowerCase().includes("overdue");
 
   return (
-    <article className="rounded-lg border border-border bg-card p-4 shadow-xs">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-2">
+    <article
+      className={cn(
+        "rounded-xl border bg-card p-5 shadow-sm",
+        isOverdue ? "border-destructive/40" : "border-border",
+      )}
+    >
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-semibold">{job.customerName}</h3>
-            <JobStatusBadge status={job.status} />
+            <h3 className="text-lg font-semibold tracking-tight">
+              {job.customerName}
+            </h3>
+            <JobStatusSelect jobId={job.id} status={job.status} />
           </div>
           {job.company ? (
             <p className="text-sm text-muted-foreground">{job.company}</p>
           ) : null}
-          <p className="text-sm">{job.jobDescription}</p>
+          <p className="text-sm leading-relaxed">{job.jobDescription}</p>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <FollowUpStateBadge job={job} />
             <span className="text-muted-foreground">
@@ -40,32 +43,34 @@ export function JobAttentionCard({ job }: { job: Job }) {
           <p
             className={cn(
               "text-sm font-semibold uppercase tracking-wide",
-              urgency.toLowerCase().includes("overdue")
+              isOverdue
                 ? "text-destructive"
                 : "text-amber-700 dark:text-amber-400",
             )}
           >
             {urgency}
           </p>
-          <p className="text-sm font-medium text-primary">{action}</p>
+          <p className="text-sm text-muted-foreground">
+            {callHref ? (
+              <a href={callHref} className="text-primary hover:underline">
+                {job.phone}
+              </a>
+            ) : (
+              "No phone number"
+            )}
+          </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 lg:max-w-xs lg:justify-end">
           {callHref ? (
             <a
               href={callHref}
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+              className="inline-flex h-8 items-center rounded-lg border border-border px-2.5 text-sm font-medium hover:bg-muted"
             >
               Call
             </a>
           ) : null}
-          <MarkContactedButton jobId={job.id} />
+          <FollowUpWorkflowButton job={job} />
           <ChangeFollowUpButton jobId={job.id} />
-          <Link
-            href={`/jobs/${job.id}`}
-            className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}
-          >
-            Open job
-          </Link>
         </div>
       </div>
     </article>

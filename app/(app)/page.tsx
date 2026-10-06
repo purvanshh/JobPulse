@@ -20,20 +20,12 @@ export default async function TodayPage() {
         title="Good morning, Denise"
         description="Here's what needs your attention today."
         actions={
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/jobs"
-              className={cn(buttonVariants({ variant: "outline" }))}
-            >
-              View jobs
-            </Link>
-            <Link href="/jobs/new" className={cn(buttonVariants())}>
-              Add job
-            </Link>
-          </div>
+          <Link href="/jobs/new" className={cn(buttonVariants())}>
+            Add job
+          </Link>
         }
       />
-      <div className="flex flex-1 flex-col gap-8 p-6">
+      <div className="flex flex-1 flex-col gap-10 p-6">
         <SummaryMetrics
           followUpsToday={metrics.followUpsToday}
           overdue={metrics.overdue}
@@ -41,8 +33,10 @@ export default async function TodayPage() {
           scheduled={metrics.scheduled}
         />
         <NeedsAttention jobs={attention} />
-        <UpcomingFollowUps jobs={upcoming} />
-        <PipelineSummary counts={pipeline} />
+        <div className="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
+          <UpcomingFollowUps jobs={upcoming} />
+          <PipelineSummary counts={pipeline} />
+        </div>
       </div>
     </>
   );
