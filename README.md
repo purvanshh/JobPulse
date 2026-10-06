@@ -6,6 +6,18 @@ A morning follow-up workspace for a small commercial refrigeration repair busine
 
 Denise receives jobs through phone, website forms, texts, referrals, and a notebook. Requests get scattered, follow-ups slip, and jobs are lost. She does not need a full field-service platform. She needs one place to know who to call and where every job stands.
 
+## Approach
+
+I treated the call as a scope document. Denise already runs the company. The failure she paid for was a Friday freezer job that never got a follow-up and was gone by Monday, about $2,000. She also cannot tell her husband how many jobs are open. Asked for one screen, she named two things: who to call this morning, and where each job stands — waiting on a quote, waiting on a yes, scheduled, or done. Technician schedules, she said, can wait. Volume is about 15–20 new requests a week. The same small set of jobs is scattered across five places.
+
+That splits the work into a place and a clock. Status answers where the job is. A follow-up date answers when she has to act. A job can be correctly “Waiting on Quote” and still be two days late, so every open job carries both. Today sorts by the date: overdue before due today, and the oldest slip first, because the longest silence is the job most likely to walk. Done jobs leave that list. There is nothing left to call about, and they should not inflate the open count.
+
+The morning loop stays short on purpose. She records the request once, including the channel it came in on, so the notebook stops being the system of record. Today shows the people who need her. The button on each card is a fixed label for that status — Contact Customer, Follow Up on Quote, Follow Up — so the same job reads the same way every morning. Marking someone contacted writes what happened and asks for the next date. It leaves the pipeline status alone. A phone call is a different decision from “they accepted the quote” or “a tech is booked.”
+
+Scheduling, invoicing, texting, and login stay out of this prototype. She already knows where the four techs are. The lost revenue was a forgotten follow-up. Adding those surfaces would turn the first screen into a field-service suite. The first screen has to stay the call list.
+
+SQLite and Server Actions follow the same constraint. The prototype has to run from a checkout, keep real jobs, and refresh the morning list after a click. Dates are compared as calendar days in local time, so “today” stays the day on her machine for a single operator.
+
 ## Solution
 
 JobPulse centers on a **Today** dashboard:
@@ -28,6 +40,8 @@ Live demo: [https://job-pulse-smoky-nine.vercel.app/](https://job-pulse-smoky-ni
 6. Open **Jobs**, filter by status, and inspect activity history  
 
 ## Key Product Decisions
+
+These follow from the approach above.
 
 - **Today is home** — the morning habit path should require zero hunting  
 - **Scheduling is out of scope** — the customer prioritized forgotten follow-ups  
