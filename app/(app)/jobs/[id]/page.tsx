@@ -108,6 +108,10 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 <span className="text-muted-foreground">Created:</span>{" "}
                 {formatDate(job.createdAt)}
               </p>
+              <p>
+                <span className="text-muted-foreground">Last updated:</span>{" "}
+                {formatDate(job.updatedAt)}
+              </p>
             </CardContent>
           </Card>
         </div>

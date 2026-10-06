@@ -44,7 +44,7 @@ export async function listJobs(filters: JobListFilters = {}) {
 
   return prisma.job.findMany({
     where,
-    orderBy: [{ nextFollowUp: "asc" }, { createdAt: "desc" }],
+    orderBy: [{ createdAt: "desc" }],
   });
 }
 

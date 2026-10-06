@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { JobFilters } from "@/components/jobs/JobFilters";
+import { JobsFlashToast } from "@/components/jobs/JobsFlashToast";
 import { JobTable } from "@/components/jobs/JobTable";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -15,6 +16,8 @@ type JobsPageProps = {
     q?: string;
     status?: string;
     followUp?: string;
+    created?: string;
+    deleted?: string;
   }>;
 };
 
@@ -41,6 +44,9 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         }
       />
       <div className="flex flex-1 flex-col gap-6 p-6">
+        <Suspense fallback={null}>
+          <JobsFlashToast />
+        </Suspense>
         <Suspense fallback={<div className="h-9 rounded-md bg-muted" />}>
           <JobFilters />
         </Suspense>

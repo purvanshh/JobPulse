@@ -18,7 +18,7 @@ export type ActionResult = {
 };
 
 function revalidateJobPaths(id?: string) {
-  revalidatePath("/today");
+  revalidatePath("/");
   revalidatePath("/jobs");
   if (id) {
     revalidatePath(`/jobs/${id}`);
@@ -35,10 +35,14 @@ export async function createJob(
     return { ok: false, fieldErrors: formatZodErrors(parsed.error) };
   }
 
+  let jobId: string;
+
   try {
     const job = await prisma.job.create({
       data: mapFormToJobData(parsed.data),
     });
+    jobId = job.id;
+
     await prisma.activity.create({
       data: {
         jobId: job.id,
@@ -46,14 +50,15 @@ export async function createJob(
         note: "Job created.",
       },
     });
-    revalidateJobPaths();
-    redirect(`/jobs/${job.id}`);
   } catch {
     return {
       ok: false,
       message: "Couldn't save this job. Please try again.",
     };
   }
+
+  revalidateJobPaths(jobId);
+  redirect("/jobs?created=1");
 }
 
 export async function updateJob(
@@ -72,27 +77,29 @@ export async function updateJob(
       where: { id },
       data: mapFormToJobData(parsed.data),
     });
-    revalidateJobPaths(id);
-    return { ok: true, message: "Job updated." };
   } catch {
     return {
       ok: false,
       message: "Couldn't update this job. Please try again.",
     };
   }
+
+  revalidateJobPaths(id);
+  return { ok: true, message: "Job updated." };
 }
 
 export async function deleteJob(id: string): Promise<ActionResult> {
   try {
     await prisma.job.delete({ where: { id } });
-    revalidateJobPaths();
-    redirect("/jobs");
   } catch {
     return {
       ok: false,
       message: "Couldn't delete this job. Please try again.",
     };
   }
+
+  revalidateJobPaths();
+  redirect("/jobs?deleted=1");
 }
 
 export async function updateJobStatus(

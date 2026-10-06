@@ -20,7 +20,9 @@ export function JobTableRow({ job }: { job: Job }) {
       </TableCell>
       <TableCell className="max-w-xs truncate">{job.jobDescription}</TableCell>
       <TableCell>
-        <JobStatusSelect jobId={job.id} status={job.status} />
+        <div className="flex flex-col gap-2">
+          <JobStatusSelect jobId={job.id} status={job.status} />
+        </div>
       </TableCell>
       <TableCell className="hidden md:table-cell">
         <div className="flex flex-col gap-1">
