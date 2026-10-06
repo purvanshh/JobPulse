@@ -1,0 +1,216 @@
+"use client";
+
+import { useActionState } from "react";
+
+import type { Job } from "@prisma/client";
+
+import { createJob, updateJob, type ActionResult } from "@/lib/actions";
+import { addDaysFromToday, toDateInputValue } from "@/lib/dates";
+import {
+  JOB_SOURCE_LABELS,
+  JOB_SOURCES,
+  JOB_STATUS_LABELS,
+  JOB_STATUSES,
+} from "@/types";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+
+type JobFormProps = {
+  job?: Job;
+  mode: "create" | "edit";
+};
+
+const initialState: ActionResult = { ok: false };
+
+export function JobForm({ job, mode }: JobFormProps) {
+  const action =
+    mode === "create"
+      ? createJob.bind(null)
+      : updateJob.bind(null, job!.id);
+
+  const [state, formAction, pending] = useActionState(action, initialState);
+
+  const defaultFollowUp =
+    job?.nextFollowUp != null
+      ? toDateInputValue(job.nextFollowUp)
+      : toDateInputValue(addDaysFromToday(0));
+
+  return (
+    <form action={formAction} className="space-y-8">
+      {state.message ? (
+        <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {state.message}
+        </p>
+      ) : null}
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Customer
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            id="customerName"
+            label="Customer name"
+            required
+            error={state.fieldErrors?.customerName}
+          >
+            <Input
+              id="customerName"
+              name="customerName"
+              defaultValue={job?.customerName ?? ""}
+              required
+            />
+          </Field>
+          <Field id="company" label="Company" error={state.fieldErrors?.company}>
+            <Input id="company" name="company" defaultValue={job?.company ?? ""} />
+          </Field>
+          <Field id="phone" label="Phone" error={state.fieldErrors?.phone}>
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              defaultValue={job?.phone ?? ""}
+            />
+          </Field>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Job
+        </h2>
+        <Field
+          id="jobDescription"
+          label="Job description"
+          required
+          error={state.fieldErrors?.jobDescription}
+        >
+          <Textarea
+            id="jobDescription"
+            name="jobDescription"
+            rows={4}
+            defaultValue={job?.jobDescription ?? ""}
+            required
+          />
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field id="source" label="Source" error={state.fieldErrors?.source}>
+            <NativeSelect
+              id="source"
+              name="source"
+              defaultValue={job?.source ?? "OTHER"}
+              options={JOB_SOURCES.map((source) => ({
+                value: source,
+                label: JOB_SOURCE_LABELS[source],
+              }))}
+            />
+          </Field>
+          <Field id="status" label="Status" error={state.fieldErrors?.status}>
+            <NativeSelect
+              id="status"
+              name="status"
+              defaultValue={job?.status ?? "NEW"}
+              options={JOB_STATUSES.map((status) => ({
+                value: status,
+                label: JOB_STATUS_LABELS[status],
+              }))}
+            />
+          </Field>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Follow-up
+        </h2>
+        <Field
+          id="nextFollowUp"
+          label="Next follow-up"
+          required
+          error={state.fieldErrors?.nextFollowUp}
+        >
+          <Input
+            id="nextFollowUp"
+            name="nextFollowUp"
+            type="date"
+            defaultValue={defaultFollowUp}
+            required
+          />
+        </Field>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Notes
+        </h2>
+        <Field id="notes" label="Notes" error={state.fieldErrors?.notes}>
+          <Textarea id="notes" name="notes" rows={4} defaultValue={job?.notes ?? ""} />
+        </Field>
+      </section>
+
+      <div className="flex items-center gap-3">
+        <Button type="submit" disabled={pending}>
+          {pending ? "Saving…" : mode === "create" ? "Create job" : "Save changes"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function NativeSelect({
+  id,
+  name,
+  defaultValue,
+  options,
+}: {
+  id: string;
+  name: string;
+  defaultValue: string;
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <select
+      id={id}
+      name={name}
+      defaultValue={defaultValue}
+      className={cn(
+        "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+      )}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function Field({
+  id,
+  label,
+  required,
+  error,
+  children,
+}: {
+  id: string;
+  label: string;
+  required?: boolean;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>
+        {label}
+        {required ? <span className="text-destructive"> *</span> : null}
+      </Label>
+      {children}
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+    </div>
+  );
+}
