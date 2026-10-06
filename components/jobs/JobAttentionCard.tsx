@@ -5,7 +5,7 @@ import { FollowUpStateBadge } from "@/components/jobs/FollowUpStateBadge";
 import { FollowUpWorkflowButton } from "@/components/jobs/FollowUpWorkflowButton";
 import { JobStatusSelect } from "@/components/jobs/JobStatusSelect";
 import { formatDate } from "@/lib/dates";
-import { getFollowUpState, getFollowUpUrgencyLabel } from "@/lib/follow-ups";
+import { getFollowUpState, getFollowUpUrgencyLabel } from "@/lib/follow-up-rules";
 import { cn } from "@/lib/utils";
 
 type JobWithActivity = Job & { activities?: Activity[] };

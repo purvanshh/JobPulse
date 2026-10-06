@@ -9,7 +9,7 @@ import type { Activity, Job } from "@prisma/client";
 
 import { markJobContacted } from "@/lib/actions";
 import { addDaysFromToday, formatDate, toDateInputValue } from "@/lib/dates";
-import { getRecommendedAction } from "@/lib/follow-ups";
+import { getRecommendedAction } from "@/lib/follow-up-rules";
 import { JOB_STATUS_LABELS } from "@/types";
 import { cn } from "@/lib/utils";
 

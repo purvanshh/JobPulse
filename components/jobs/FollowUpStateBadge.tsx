@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { followUpStateLabel, getFollowUpState } from "@/lib/follow-ups";
+import { followUpStateLabel, getFollowUpState } from "@/lib/follow-up-rules";
 import { cn } from "@/lib/utils";
 import type { Job } from "@prisma/client";
 

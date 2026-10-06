@@ -1,5 +1,8 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // native is local dev. The others are the Linux hosts used by Vercel,
+  // Railway, and Render. Without them the deployed server cannot start Prisma.
+  binaryTargets = ["native", "rhel-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
 
 datasource db {

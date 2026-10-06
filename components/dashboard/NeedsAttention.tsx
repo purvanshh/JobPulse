@@ -2,7 +2,7 @@ import type { Activity, Job } from "@prisma/client";
 
 import { JobAttentionCard } from "@/components/jobs/JobAttentionCard";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { getFollowUpState } from "@/lib/follow-ups";
+import { getFollowUpState } from "@/lib/follow-up-rules";
 
 type JobWithActivity = Job & { activities?: Activity[] };
 
