@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ActivityTimeline } from "@/components/jobs/ActivityTimeline";
 import { DeleteJobButton } from "@/components/jobs/DeleteJobButton";
+import { FollowUpStateBadge } from "@/components/jobs/FollowUpStateBadge";
 import { JobForm } from "@/components/jobs/JobForm";
 import { JobStatusBadge } from "@/components/jobs/JobStatusBadge";
 import { JobStatusSelect } from "@/components/jobs/JobStatusSelect";
+import { MarkContactedButton } from "@/components/jobs/MarkContactedButton";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { formatDate } from "@/lib/dates";
+import { getJobActivities, getRecommendedAction } from "@/lib/follow-ups";
 import { getJobById } from "@/lib/jobs";
 import { JOB_SOURCE_LABELS } from "@/types";
 
@@ -25,6 +29,8 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
     notFound();
   }
 
+  const activities = await getJobActivities(id);
+
   return (
     <>
       <PageHeader
@@ -32,6 +38,15 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         description={job.jobDescription}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            {job.phone ? (
+              <a
+                href={`tel:${job.phone.replace(/\s/g, "")}`}
+                className="inline-flex h-9 items-center rounded-md border border-input px-3 text-sm font-medium hover:bg-muted"
+              >
+                Call
+              </a>
+            ) : null}
+            <MarkContactedButton jobId={job.id} />
             <JobStatusSelect jobId={job.id} status={job.status} />
             <DeleteJobButton jobId={job.id} />
           </div>
@@ -80,9 +95,14 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               <CardTitle className="text-base">Follow-up</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <p>
-                <span className="text-muted-foreground">Next follow-up:</span>{" "}
+              <p className="flex flex-wrap items-center gap-2">
+                <span className="text-muted-foreground">Next follow-up:</span>
                 {formatDate(job.nextFollowUp)}
+                <FollowUpStateBadge job={job} />
+              </p>
+              <p>
+                <span className="text-muted-foreground">Recommended:</span>{" "}
+                {getRecommendedAction(job.status)}
               </p>
               <p>
                 <span className="text-muted-foreground">Created:</span>{" "}
@@ -102,6 +122,15 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             </CardContent>
           </Card>
         ) : null}
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Activity timeline</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ActivityTimeline activities={activities} />
+          </CardContent>
+        </Card>
 
         <Separator />
 

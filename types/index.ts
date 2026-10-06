@@ -1,6 +1,12 @@
-import type { JobSource, JobStatus } from "@prisma/client";
+import type { ActivityType, JobSource, JobStatus } from "@prisma/client";
 
-export type { Job, JobSource, JobStatus } from "@prisma/client";
+export type { Activity, ActivityType, Job, JobSource, JobStatus } from "@prisma/client";
+
+export const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
+  CONTACTED: "Customer contacted",
+  NOTE: "Note added",
+  STATUS_CHANGED: "Status changed",
+};
 
 export type FollowUpState =
   | "OVERDUE"
