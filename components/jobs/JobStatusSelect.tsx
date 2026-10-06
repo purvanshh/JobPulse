@@ -27,7 +27,7 @@ export function JobStatusSelect({
       className={
         variant === "telemetry"
           ? "max-w-full min-w-0 rounded-[4px] border border-nt-border bg-[#18181A] px-2 py-0.5 font-mono text-[11px] text-white outline-none focus:border-white focus:ring-0 disabled:opacity-50"
-          : "h-9 rounded-[4px] border border-input bg-[#0A0A0A] px-3 text-sm text-foreground outline-none focus:border-white"
+          : "h-9 max-w-full min-w-0 rounded-[4px] border border-[#27272A] bg-[#0A0A0A] px-3 font-mono text-xs text-white outline-none focus:border-white"
       }
       value={status}
       disabled={pending}

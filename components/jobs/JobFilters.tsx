@@ -58,7 +58,7 @@ export function JobFilters() {
       />
       <select
         aria-label="Filter by status"
-        className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+        className="h-9 w-full min-w-0 rounded-[4px] border border-[#27272A] bg-[#0A0A0A] px-3 font-mono text-xs text-white outline-none focus:border-white"
         value={status}
         onChange={(event) => updateParam("status", event.target.value)}
       >
@@ -71,7 +71,7 @@ export function JobFilters() {
       </select>
       <select
         aria-label="Filter by follow-up"
-        className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+        className="h-9 w-full min-w-0 rounded-[4px] border border-[#27272A] bg-[#0A0A0A] px-3 font-mono text-xs text-white outline-none focus:border-white"
         value={followUp}
         onChange={(event) => updateParam("followUp", event.target.value)}
       >

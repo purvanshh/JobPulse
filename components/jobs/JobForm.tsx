@@ -63,10 +63,12 @@ export function JobForm({ job, mode }: JobFormProps) {
 
   if (createdJobId) {
     return (
-      <div className="space-y-6 rounded-xl border border-border bg-muted/20 p-6">
+      <div className="space-y-4 rounded-lg border border-nt-border bg-nt-surface p-4 sm:p-6">
         <div>
-          <h2 className="text-lg font-semibold">Job saved</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h2 className="font-display text-base font-bold tracking-tight text-white">
+            Job saved
+          </h2>
+          <p className="mt-1 text-xs text-nt-secondary">
             The request is in your list and will show on Today if follow-up is due.
           </p>
         </div>
@@ -100,14 +102,14 @@ export function JobForm({ job, mode }: JobFormProps) {
       {state.message && !state.ok ? (
         <p
           role="alert"
-          className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          className="rounded-[4px] border border-nt-red-border bg-nt-red-subtle px-3 py-2 font-mono text-xs text-nt-red"
         >
           {state.message}
         </p>
       ) : null}
 
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 className="font-mono text-[10px] font-semibold tracking-widest text-nt-secondary uppercase">
           Customer
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -140,7 +142,7 @@ export function JobForm({ job, mode }: JobFormProps) {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 className="font-mono text-[10px] font-semibold tracking-widest text-nt-secondary uppercase">
           Job
         </h2>
         <Field
@@ -184,7 +186,7 @@ export function JobForm({ job, mode }: JobFormProps) {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 className="font-mono text-[10px] font-semibold tracking-widest text-nt-secondary uppercase">
           Follow-up
         </h2>
         <Field
@@ -204,7 +206,7 @@ export function JobForm({ job, mode }: JobFormProps) {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 className="font-mono text-[10px] font-semibold tracking-widest text-nt-secondary uppercase">
           Notes
         </h2>
         <Field id="notes" label="Notes" error={state.fieldErrors?.notes}>
@@ -247,7 +249,7 @@ function NativeSelect({
       name={name}
       defaultValue={defaultValue}
       className={cn(
-        "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+        "flex h-9 w-full rounded-[4px] border border-[#27272A] bg-[#0A0A0A] px-3 font-mono text-xs text-white outline-none focus-visible:border-white",
       )}
     >
       {options.map((option) => (
@@ -279,7 +281,7 @@ function Field({
         {required ? <span className="text-destructive"> *</span> : null}
       </Label>
       {children}
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {error ? <p className="font-mono text-[11px] text-nt-red">{error}</p> : null}
     </div>
   );
 }

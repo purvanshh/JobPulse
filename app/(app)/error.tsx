@@ -18,8 +18,10 @@ export default function AppError({
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-      <h2 className="text-xl font-semibold">Something went wrong</h2>
-      <p className="max-w-md text-sm text-muted-foreground">
+      <h2 className="font-display text-2xl font-bold tracking-tight text-white">
+        Something went wrong
+      </h2>
+      <p className="max-w-md text-xs text-nt-muted">
         We couldn&apos;t load this page. Please try again.
       </p>
       <button type="button" className={cn(buttonVariants())} onClick={reset}>

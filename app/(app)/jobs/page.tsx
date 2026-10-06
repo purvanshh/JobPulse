@@ -4,11 +4,10 @@ import { Suspense } from "react";
 import { JobFilters } from "@/components/jobs/JobFilters";
 import { JobsFlashToast } from "@/components/jobs/JobsFlashToast";
 import { JobTable } from "@/components/jobs/JobTable";
+import { PageFrame } from "@/components/layout/PageFrame";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { buttonVariants } from "@/components/ui/button";
 import { listJobs, type JobListFilters } from "@/lib/jobs";
-import { cn } from "@/lib/utils";
 import type { JobStatus } from "@prisma/client";
 
 type JobsPageProps = {
@@ -75,40 +74,43 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   const empty = emptyCopy(params);
 
   return (
-    <>
+    <PageFrame>
       <PageHeader
         title="Jobs"
         description="Every open request in one place."
         actions={
-          <Link href="/jobs/new" className={cn(buttonVariants())}>
+          <Link href="/jobs/new" className={addJobClass}>
+            <span className="font-mono text-sm leading-none font-bold">+</span>
             Add job
           </Link>
         }
       />
-      <div className="flex flex-1 flex-col gap-6 p-6">
-        <Suspense fallback={null}>
-          <JobsFlashToast />
-        </Suspense>
-        <Suspense fallback={<div className="h-9 rounded-md bg-muted" aria-hidden />}>
-          <JobFilters />
-        </Suspense>
+      <Suspense fallback={null}>
+        <JobsFlashToast />
+      </Suspense>
+      <Suspense fallback={<div className="h-9 rounded-[4px] border border-nt-border bg-nt-surface" aria-hidden />}>
+        <JobFilters />
+      </Suspense>
 
-        {jobs.length === 0 ? (
-          <EmptyState
-            title={empty.title}
-            description={empty.description}
-            action={
-              !hasFilters ? (
-                <Link href="/jobs/new" className={cn(buttonVariants())}>
-                  Add job
-                </Link>
-              ) : undefined
-            }
-          />
-        ) : (
-          <JobTable jobs={jobs} />
-        )}
-      </div>
-    </>
+      {jobs.length === 0 ? (
+        <EmptyState
+          title={empty.title}
+          description={empty.description}
+          action={
+            !hasFilters ? (
+              <Link href="/jobs/new" className={addJobClass}>
+                <span className="font-mono text-sm leading-none font-bold">+</span>
+                Add job
+              </Link>
+            ) : undefined
+          }
+        />
+      ) : (
+        <JobTable jobs={jobs} />
+      )}
+    </PageFrame>
   );
 }
+
+const addJobClass =
+  "inline-flex items-center gap-1.5 rounded-[4px] bg-white px-3.5 py-1.5 text-xs font-medium text-black transition-colors hover:bg-neutral-200";

@@ -9,6 +9,7 @@ import { FollowUpWorkflowButton } from "@/components/jobs/FollowUpWorkflowButton
 import { JobForm } from "@/components/jobs/JobForm";
 import { JobStatusBadge } from "@/components/jobs/JobStatusBadge";
 import { JobStatusSelect } from "@/components/jobs/JobStatusSelect";
+import { PageFrame } from "@/components/layout/PageFrame";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { formatDate, formatLongDate } from "@/lib/dates";
 import {
@@ -17,12 +18,7 @@ import {
   getRecommendedAction,
 } from "@/lib/follow-ups";
 import { getJobById } from "@/lib/jobs";
-import { buttonVariants } from "@/components/ui/button";
 import { JOB_SOURCE_LABELS } from "@/types";
-import { cn } from "@/lib/utils";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 type JobDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -41,7 +37,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const callHref = job.phone ? `tel:${job.phone.replace(/\s/g, "")}` : null;
 
   return (
-    <>
+    <PageFrame>
       <PageHeader
         title={job.customerName}
         description={job.jobDescription}
@@ -50,150 +46,158 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             {job.status !== "DONE" && job.status !== "SCHEDULED" ? (
               <FollowUpWorkflowButton job={{ ...job, activities: activities.slice(0, 1) }} />
             ) : (
-              <span className="text-sm text-muted-foreground">{recommended}</span>
+              <span className="font-mono text-[11px] tracking-wide text-nt-secondary uppercase">
+                {recommended}
+              </span>
             )}
             {callHref ? (
-              <a
-                href={callHref}
-                className={cn(buttonVariants({ variant: "outline" }))}
-              >
+              <a href={callHref} className={ghostAction}>
                 Call
               </a>
             ) : (
-              <span className="text-sm text-muted-foreground">No phone number</span>
+              <span className="font-mono text-[11px] text-nt-secondary">No phone number</span>
             )}
-            <ChangeFollowUpButton jobId={job.id} label="Change follow-up" />
-            <JobStatusSelect jobId={job.id} status={job.status} />
+            <ChangeFollowUpButton jobId={job.id} label="Change follow-up" className={ghostAction} />
+            <JobStatusSelect jobId={job.id} status={job.status} variant="telemetry" />
             <DeleteJobButton jobId={job.id} />
           </div>
         }
       />
-      <div className="flex flex-1 flex-col gap-6 p-6">
-        <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Who</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <p>
-                <span className="text-muted-foreground">Customer:</span>{" "}
-                {job.customerName}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Company:</span>{" "}
-                {job.company ?? "—"}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Phone:</span>{" "}
-                {callHref ? (
-                  <a href={callHref} className="text-primary hover:underline">
-                    {job.phone}
-                  </a>
-                ) : (
-                  "No phone number"
-                )}
-              </p>
-            </CardContent>
-          </Card>
 
-          <Card className="border-primary/20 bg-muted/20">
-            <CardHeader>
-              <CardTitle className="text-base">What to do next</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Next follow-up
-                </p>
-                <p className="mt-1 text-lg font-semibold">
-                  {formatLongDate(job.nextFollowUp)}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <FollowUpStateBadge job={job} />
-                <JobStatusBadge status={job.status} />
-              </div>
-              <p className="font-medium">{getFollowUpDescription(job)}</p>
-              {recommended !== "No Action" ? (
-                <p>
-                  <span className="text-muted-foreground">Recommended:</span>{" "}
-                  <span className="font-medium text-primary">{recommended}</span>
-                </p>
+      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <Panel title="Who">
+          <Fact label="Customer" value={job.customerName} />
+          <Fact label="Company" value={job.company ?? "—"} />
+          <Fact
+            label="Phone"
+            value={
+              callHref ? (
+                <a href={callHref} className="text-white hover:underline">
+                  {job.phone}
+                </a>
               ) : (
-                <p className="text-muted-foreground">No follow-up action needed.</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                "No phone number"
+              )
+            }
+          />
+        </Panel>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">What</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <p className="leading-relaxed">{job.jobDescription}</p>
-              <p>
-                <span className="text-muted-foreground">Source:</span>{" "}
-                {JOB_SOURCE_LABELS[job.source]}
-              </p>
-              {job.notes ? (
-                <div className="pt-2">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Notes
-                  </p>
-                  <p className="mt-1 whitespace-pre-wrap text-muted-foreground">
-                    {job.notes}
-                  </p>
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Where it stands</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <p className="flex items-center gap-2">
-                <span className="text-muted-foreground">Status:</span>
-                <JobStatusBadge status={job.status} />
-              </p>
-              <p>
-                <span className="text-muted-foreground">Created:</span>{" "}
-                {formatDate(job.createdAt)}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Last updated:</span>{" "}
-                {formatDate(job.updatedAt)}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">What happened</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ActivityTimeline activities={activities} />
-          </CardContent>
-        </Card>
-
-        <Separator />
-
-        <Card className="max-w-3xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">Edit job</CardTitle>
-            <Link href="/jobs" className="text-sm text-primary hover:underline">
-              Back to jobs
-            </Link>
-          </CardHeader>
-          <CardContent>
-            <JobForm mode="edit" job={job} />
-          </CardContent>
-        </Card>
+        <section className="space-y-3 rounded-lg border border-nt-border bg-nt-surface p-4 sm:p-6">
+          <h2 className="font-display text-base font-bold tracking-tight text-white">
+            What to do next
+          </h2>
+          <div>
+            <p className="font-mono text-[10px] font-semibold tracking-widest text-nt-secondary uppercase">
+              Next follow-up
+            </p>
+            <p className="mt-1 font-display text-lg font-bold tracking-tight text-white">
+              {formatLongDate(job.nextFollowUp)}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <FollowUpStateBadge job={job} />
+            <JobStatusBadge status={job.status} />
+          </div>
+          <p className="text-xs font-medium text-white">{getFollowUpDescription(job)}</p>
+          {recommended !== "No Action" ? (
+            <p className="text-xs text-nt-secondary">
+              Recommended{" "}
+              <span className="font-mono text-[11px] font-semibold tracking-wide text-white uppercase">
+                {recommended}
+              </span>
+            </p>
+          ) : (
+            <p className="font-mono text-[11px] tracking-wide text-nt-secondary uppercase">
+              No follow-up action needed.
+            </p>
+          )}
+        </section>
       </div>
-    </>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Panel title="What">
+          <p className="text-xs leading-relaxed text-neutral-300">{job.jobDescription}</p>
+          <Fact label="Source" value={JOB_SOURCE_LABELS[job.source]} />
+          {job.notes ? (
+            <div className="pt-1">
+              <p className="font-mono text-[10px] font-semibold tracking-widest text-nt-secondary uppercase">
+                Notes
+              </p>
+              <p className="mt-1 whitespace-pre-wrap text-xs text-neutral-300">{job.notes}</p>
+            </div>
+          ) : null}
+        </Panel>
+
+        <Panel title="Where it stands">
+          <p className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="font-mono text-[10px] font-semibold tracking-widest text-nt-secondary uppercase">
+              Status
+            </span>
+            <JobStatusBadge status={job.status} />
+          </p>
+          <Fact label="Created" value={formatDate(job.createdAt)} />
+          <Fact label="Last updated" value={formatDate(job.updatedAt)} />
+        </Panel>
+      </div>
+
+      <section className="rounded-lg border border-nt-border bg-nt-surface p-4 sm:p-6">
+        <h2 className="mb-4 border-b border-nt-border pb-4 font-display text-base font-bold tracking-tight text-white">
+          What happened
+        </h2>
+        <ActivityTimeline activities={activities} />
+      </section>
+
+      <section className="max-w-3xl rounded-lg border border-nt-border bg-nt-surface p-4 sm:p-6">
+        <div className="mb-6 flex items-center justify-between gap-4 border-b border-nt-border pb-4">
+          <h2 className="font-display text-base font-bold tracking-tight text-white">
+            Edit job
+          </h2>
+          <Link
+            href="/jobs"
+            className="font-mono text-xs font-medium text-white hover:text-nt-muted hover:underline"
+          >
+            Back to jobs
+          </Link>
+        </div>
+        <JobForm mode="edit" job={job} />
+      </section>
+    </PageFrame>
+  );
+}
+
+const ghostAction =
+  "inline-flex h-8 items-center rounded-[4px] border border-[#27272A] bg-transparent px-3 font-mono text-xs text-nt-secondary transition-colors hover:border-[#3F3F46] hover:bg-[#121212] hover:text-white";
+
+function Panel({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-3 rounded-lg border border-nt-border bg-nt-surface p-4 sm:p-6">
+      <h2 className="border-b border-nt-border pb-4 font-display text-base font-bold tracking-tight text-white">
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+function Fact({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <p className="text-xs text-neutral-300">
+      <span className="font-mono text-[10px] font-semibold tracking-widest text-nt-secondary uppercase">
+        {label}
+      </span>{" "}
+      {value}
+    </p>
   );
 }

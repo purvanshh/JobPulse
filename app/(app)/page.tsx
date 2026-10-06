@@ -5,6 +5,7 @@ import { NeedsAttention } from "@/components/dashboard/NeedsAttention";
 import { PipelineSummary } from "@/components/dashboard/PipelineSummary";
 import { SummaryMetrics } from "@/components/dashboard/SummaryMetrics";
 import { UpcomingFollowUps } from "@/components/dashboard/UpcomingFollowUps";
+import { PageFrame } from "@/components/layout/PageFrame";
 import { getDashboardJobs } from "@/lib/follow-ups";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,7 @@ export default async function TodayPage() {
   const { attention, upcoming, metrics, pipeline } = await getDashboardJobs();
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1184px] flex-1 space-y-7 p-4 sm:p-8 lg:p-10">
+    <PageFrame>
       <section
         className="flex flex-col justify-between gap-4 pb-1 sm:flex-row sm:items-center"
         data-purpose="top-header"
@@ -64,6 +65,6 @@ export default async function TodayPage() {
           <PipelineSummary counts={pipeline} />
         </div>
       </section>
-    </div>
+    </PageFrame>
   );
 }
