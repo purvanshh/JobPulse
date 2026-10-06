@@ -2,16 +2,27 @@ import Link from "next/link";
 
 import type { Job } from "@prisma/client";
 
-import { FollowUpStateBadge } from "@/components/jobs/FollowUpStateBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { formatDate } from "@/lib/dates";
+import { buttonVariants } from "@/components/ui/button";
+import { formatRelativeDay } from "@/lib/dates";
+import { cn } from "@/lib/utils";
 
 export function UpcomingFollowUps({ jobs }: { jobs: Job[] }) {
   return (
     <section className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold">Coming up</h2>
-        <p className="text-sm text-muted-foreground">Upcoming follow-ups on the horizon.</p>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold">Coming up</h2>
+          <p className="text-sm text-muted-foreground">
+            Next follow-ups after today.
+          </p>
+        </div>
+        <Link
+          href="/jobs?followUp=upcoming"
+          className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+        >
+          View all
+        </Link>
       </div>
       {jobs.length === 0 ? (
         <EmptyState
@@ -21,17 +32,27 @@ export function UpcomingFollowUps({ jobs }: { jobs: Job[] }) {
       ) : (
         <ul className="divide-y divide-border rounded-lg border border-border bg-card">
           {jobs.map((job) => (
-            <li key={job.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <li
+              key={job.id}
+              className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+            >
               <div>
-                <Link href={`/jobs/${job.id}`} className="font-medium hover:underline">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {formatRelativeDay(job.nextFollowUp)}
+                </p>
+                <Link
+                  href={`/jobs/${job.id}`}
+                  className="font-medium hover:underline"
+                >
                   {job.customerName}
                 </Link>
-                <p className="text-sm text-muted-foreground">{job.jobDescription}</p>
+                {job.company ? (
+                  <p className="text-sm text-muted-foreground">{job.company}</p>
+                ) : null}
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <FollowUpStateBadge job={job} />
-                <span className="text-muted-foreground">{formatDate(job.nextFollowUp)}</span>
-              </div>
+              <p className="max-w-xs truncate text-sm text-muted-foreground">
+                {job.jobDescription}
+              </p>
             </li>
           ))}
         </ul>

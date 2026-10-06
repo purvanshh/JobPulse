@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ActivityTimeline } from "@/components/jobs/ActivityTimeline";
+import { ChangeFollowUpButton } from "@/components/jobs/ChangeFollowUpButton";
 import { DeleteJobButton } from "@/components/jobs/DeleteJobButton";
 import { FollowUpStateBadge } from "@/components/jobs/FollowUpStateBadge";
 import { JobForm } from "@/components/jobs/JobForm";
@@ -9,8 +10,12 @@ import { JobStatusBadge } from "@/components/jobs/JobStatusBadge";
 import { JobStatusSelect } from "@/components/jobs/JobStatusSelect";
 import { MarkContactedButton } from "@/components/jobs/MarkContactedButton";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { formatDate } from "@/lib/dates";
-import { getJobActivities, getRecommendedAction } from "@/lib/follow-ups";
+import { formatDate, formatLongDate } from "@/lib/dates";
+import {
+  getFollowUpDescription,
+  getJobActivities,
+  getRecommendedAction,
+} from "@/lib/follow-ups";
 import { getJobById } from "@/lib/jobs";
 import { JOB_SOURCE_LABELS } from "@/types";
 
@@ -30,6 +35,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   }
 
   const activities = await getJobActivities(id);
+  const recommended = getRecommendedAction(job.status);
 
   return (
     <>
@@ -47,6 +53,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               </a>
             ) : null}
             <MarkContactedButton jobId={job.id} />
+            <ChangeFollowUpButton jobId={job.id} label="Change follow-up" />
             <JobStatusSelect jobId={job.id} status={job.status} />
             <DeleteJobButton jobId={job.id} />
           </div>
@@ -88,22 +95,6 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 <span className="text-muted-foreground">Status:</span>
                 <JobStatusBadge status={job.status} />
               </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Follow-up</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <p className="flex flex-wrap items-center gap-2">
-                <span className="text-muted-foreground">Next follow-up:</span>
-                {formatDate(job.nextFollowUp)}
-                <FollowUpStateBadge job={job} />
-              </p>
-              <p>
-                <span className="text-muted-foreground">Recommended:</span>{" "}
-                {getRecommendedAction(job.status)}
-              </p>
               <p>
                 <span className="text-muted-foreground">Created:</span>{" "}
                 {formatDate(job.createdAt)}
@@ -112,6 +103,32 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                 <span className="text-muted-foreground">Last updated:</span>{" "}
                 {formatDate(job.updatedAt)}
               </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Follow-up</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Next follow-up
+                </p>
+                <p className="mt-1 text-base font-semibold">
+                  {formatLongDate(job.nextFollowUp)}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <FollowUpStateBadge job={job} />
+                <JobStatusBadge status={job.status} />
+              </div>
+              <p className="font-medium">{getFollowUpDescription(job)}</p>
+              {recommended !== "No Action" ? (
+                <p>
+                  <span className="text-muted-foreground">Recommended:</span>{" "}
+                  {recommended}
+                </p>
+              ) : null}
             </CardContent>
           </Card>
         </div>

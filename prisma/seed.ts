@@ -5,9 +5,20 @@ import { addDaysFromToday } from "../lib/dates";
 const prisma = new PrismaClient();
 
 async function main() {
+  await prisma.activity.deleteMany();
   await prisma.job.deleteMany();
 
   const jobs = [
+    {
+      customerName: "Casey Wright",
+      company: "Dockside Grill",
+      phone: "555-0111",
+      jobDescription: "Ice machine sanitize and tune-up",
+      source: "REFERRAL" as const,
+      status: "NEW" as const,
+      nextFollowUp: addDaysFromToday(-3),
+      notes: "Left voicemail three days ago. Still no callback.",
+    },
     {
       customerName: "Maria Lopez",
       company: "ABC Restaurant",
@@ -16,7 +27,16 @@ async function main() {
       source: "PHONE" as const,
       status: "WAITING_ON_CUSTOMER" as const,
       nextFollowUp: addDaysFromToday(-2),
-      notes: "Quote sent last week; manager traveling.",
+      notes: "Quote sent; manager said they would decide soon.",
+    },
+    {
+      customerName: "Alex Morgan",
+      company: "Harbor Bistro",
+      phone: "555-0106",
+      jobDescription: "Prep cooler temperature swings",
+      source: "PHONE" as const,
+      status: "WAITING_ON_CUSTOMER" as const,
+      nextFollowUp: addDaysFromToday(-1),
     },
     {
       customerName: "James Chen",
@@ -29,15 +49,6 @@ async function main() {
       notes: "Needs parts list before quote.",
     },
     {
-      customerName: "Pat Rivera",
-      company: "Central Warehouse",
-      phone: "555-0103",
-      jobDescription: "Ice machine production down",
-      source: "REPEAT_CUSTOMER" as const,
-      status: "SCHEDULED" as const,
-      nextFollowUp: addDaysFromToday(3),
-    },
-    {
       customerName: "Sam Ortiz",
       company: "Burger House",
       phone: "555-0104",
@@ -47,21 +58,13 @@ async function main() {
       nextFollowUp: addDaysFromToday(0),
     },
     {
-      customerName: "Denise Kim",
-      company: "Metro Grocery",
-      jobDescription: "Walk-in freezer completed last month",
-      source: "REFERRAL" as const,
-      status: "DONE" as const,
-      nextFollowUp: addDaysFromToday(-10),
-    },
-    {
-      customerName: "Alex Morgan",
-      company: "Harbor Bistro",
-      phone: "555-0106",
-      jobDescription: "Prep cooler temperature swings",
+      customerName: "Riley Adams",
+      company: "Corner Market",
+      phone: "555-0110",
+      jobDescription: "Emergency freezer repair callback",
       source: "PHONE" as const,
       status: "WAITING_ON_CUSTOMER" as const,
-      nextFollowUp: addDaysFromToday(-1),
+      nextFollowUp: addDaysFromToday(0),
     },
     {
       customerName: "Chris Nguyen",
@@ -82,31 +85,13 @@ async function main() {
       nextFollowUp: addDaysFromToday(2),
     },
     {
-      customerName: "Jordan Lee",
-      company: "Pizza Palace",
-      jobDescription: "Walk-in cooler fan motor",
-      source: "OTHER" as const,
+      customerName: "Pat Rivera",
+      company: "Central Warehouse",
+      phone: "555-0103",
+      jobDescription: "Ice machine production down",
+      source: "REPEAT_CUSTOMER" as const,
       status: "SCHEDULED" as const,
-      nextFollowUp: addDaysFromToday(5),
-      phone: "555-0109",
-    },
-    {
-      customerName: "Riley Adams",
-      company: "Corner Market",
-      phone: "555-0110",
-      jobDescription: "Emergency freezer repair callback",
-      source: "PHONE" as const,
-      status: "WAITING_ON_CUSTOMER" as const,
-      nextFollowUp: addDaysFromToday(0),
-    },
-    {
-      customerName: "Casey Wright",
-      company: "Dockside Grill",
-      phone: "555-0111",
-      jobDescription: "Ice machine sanitize and tune-up",
-      source: "REFERRAL" as const,
-      status: "NEW" as const,
-      nextFollowUp: addDaysFromToday(-3),
+      nextFollowUp: addDaysFromToday(3),
     },
     {
       customerName: "Morgan Ellis",
@@ -116,6 +101,23 @@ async function main() {
       source: "TEXT" as const,
       status: "WAITING_ON_QUOTE" as const,
       nextFollowUp: addDaysFromToday(4),
+    },
+    {
+      customerName: "Jordan Lee",
+      company: "Pizza Palace",
+      phone: "555-0109",
+      jobDescription: "Walk-in cooler fan motor",
+      source: "OTHER" as const,
+      status: "SCHEDULED" as const,
+      nextFollowUp: addDaysFromToday(5),
+    },
+    {
+      customerName: "Denise Kim",
+      company: "Metro Grocery",
+      jobDescription: "Walk-in freezer completed last month",
+      source: "REFERRAL" as const,
+      status: "DONE" as const,
+      nextFollowUp: addDaysFromToday(-10),
     },
     {
       customerName: "Jamie Fox",

@@ -1,10 +1,12 @@
 import type { Job, JobStatus } from "@prisma/client";
 
-import { toDateOnly } from "@/lib/dates";
+import { daysBetween, formatRelativeDay, toDateOnly } from "@/lib/dates";
 import { prisma } from "@/lib/db";
 import type { FollowUpState } from "@/types";
 
-export function getFollowUpState(job: Pick<Job, "status" | "nextFollowUp">): FollowUpState {
+export function getFollowUpState(
+  job: Pick<Job, "status" | "nextFollowUp">,
+): FollowUpState {
   if (job.status === "DONE") {
     return "COMPLETED";
   }
@@ -12,7 +14,7 @@ export function getFollowUpState(job: Pick<Job, "status" | "nextFollowUp">): Fol
   const today = toDateOnly(new Date());
   const followUp = toDateOnly(job.nextFollowUp);
 
-  if (followUp < today) {
+  if (followUp.getTime() < today.getTime()) {
     return "OVERDUE";
   }
   if (followUp.getTime() === today.getTime()) {
@@ -30,7 +32,7 @@ export function getRecommendedAction(status: JobStatus): string {
     case "WAITING_ON_CUSTOMER":
       return "Follow Up";
     case "SCHEDULED":
-      return "View Job / Check Schedule";
+      return "Check Schedule";
     case "DONE":
       return "No Action";
     default:
@@ -51,56 +53,107 @@ export function followUpStateLabel(state: FollowUpState): string {
   }
 }
 
-function isActiveJob(job: Job) {
-  return job.status !== "DONE";
+/** Short urgency label for attention cards. */
+export function getFollowUpUrgencyLabel(
+  job: Pick<Job, "status" | "nextFollowUp">,
+): string {
+  const state = getFollowUpState(job);
+
+  if (state === "COMPLETED") {
+    return "Completed";
+  }
+  if (state === "DUE_TODAY") {
+    return "Due today";
+  }
+  if (state === "OVERDUE") {
+    const days = daysBetween(job.nextFollowUp);
+    if (days <= 1) return "Overdue by 1 day";
+    return `Overdue by ${days} days`;
+  }
+
+  return `Coming ${formatRelativeDay(job.nextFollowUp).toLowerCase()}`;
 }
 
-export async function getDashboardJobs() {
-  const jobs = await prisma.job.findMany({
-    orderBy: [{ nextFollowUp: "asc" }, { createdAt: "desc" }],
-  });
+/** Sentence for job detail follow-up area. */
+export function getFollowUpDescription(
+  job: Pick<Job, "status" | "nextFollowUp">,
+): string {
+  const state = getFollowUpState(job);
 
-  const active = jobs.filter(isActiveJob);
+  if (state === "COMPLETED") {
+    return "This job is done. No follow-up is needed.";
+  }
+  if (state === "DUE_TODAY") {
+    return "Follow-up is due today.";
+  }
+  if (state === "OVERDUE") {
+    const days = daysBetween(job.nextFollowUp);
+    if (days <= 1) return "Follow-up is overdue by 1 day.";
+    return `Follow-up is overdue by ${days} days.`;
+  }
 
-  const attention = active
+  const relative = formatRelativeDay(job.nextFollowUp);
+  if (relative === "Tomorrow") {
+    return "Follow-up is due tomorrow.";
+  }
+  return `Follow-up is due ${relative}.`;
+}
+
+export function compareAttentionJobs(a: Job, b: Job): number {
+  const stateA = getFollowUpState(a);
+  const stateB = getFollowUpState(b);
+
+  if (stateA !== stateB) {
+    return stateA === "OVERDUE" ? -1 : 1;
+  }
+
+  // Most overdue first (earlier nextFollowUp), then due-today by follow-up time
+  const followUpDiff = a.nextFollowUp.getTime() - b.nextFollowUp.getTime();
+  if (followUpDiff !== 0) {
+    return followUpDiff;
+  }
+
+  // Oldest created first among ties
+  return a.createdAt.getTime() - b.createdAt.getTime();
+}
+
+export function getAttentionJobs(jobs: Job[]): Job[] {
+  return jobs
     .filter((job) => {
       const state = getFollowUpState(job);
       return state === "OVERDUE" || state === "DUE_TODAY";
     })
-    .sort((a, b) => {
-      const stateA = getFollowUpState(a);
-      const stateB = getFollowUpState(b);
-      if (stateA === stateB) {
-        return a.nextFollowUp.getTime() - b.nextFollowUp.getTime();
-      }
-      return stateA === "OVERDUE" ? -1 : 1;
-    });
+    .sort(compareAttentionJobs);
+}
 
-  const upcoming = active
+export function getUpcomingFollowUps(jobs: Job[], limit = 5): Job[] {
+  return jobs
     .filter((job) => getFollowUpState(job) === "UPCOMING")
-    .slice(0, 8);
+    .sort((a, b) => a.nextFollowUp.getTime() - b.nextFollowUp.getTime())
+    .slice(0, limit);
+}
 
-  const followUpsToday = active.filter(
-    (job) => getFollowUpState(job) === "DUE_TODAY",
-  ).length;
-  const overdue = active.filter(
-    (job) => getFollowUpState(job) === "OVERDUE",
-  ).length;
-  const openJobs = active.length;
-  const scheduled = active.filter((job) => job.status === "SCHEDULED").length;
+export async function getDashboardJobs() {
+  const jobs = await prisma.job.findMany({
+    orderBy: [{ nextFollowUp: "asc" }, { createdAt: "asc" }],
+  });
 
-  const pipeline = await getPipelineCounts();
+  const active = jobs.filter((job) => job.status !== "DONE");
+  const attention = getAttentionJobs(active);
+  const upcoming = getUpcomingFollowUps(active, 5);
 
   return {
     attention,
     upcoming,
     metrics: {
-      followUpsToday,
-      overdue,
-      openJobs,
-      scheduled,
+      followUpsToday: active.filter(
+        (job) => getFollowUpState(job) === "DUE_TODAY",
+      ).length,
+      overdue: active.filter((job) => getFollowUpState(job) === "OVERDUE").length,
+      openJobs: active.length,
+      scheduled: active.filter((job) => job.status === "SCHEDULED").length,
     },
-    pipeline,
+    pipeline: await getPipelineCounts(),
   };
 }
 
