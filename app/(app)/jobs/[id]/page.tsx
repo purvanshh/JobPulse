@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { ActivityTimeline } from "@/components/jobs/ActivityTimeline";
 import { ChangeFollowUpButton } from "@/components/jobs/ChangeFollowUpButton";
+import { ConvertedJobBanner } from "@/components/jobs/ConvertedJobBanner";
 import { DeleteJobButton } from "@/components/jobs/DeleteJobButton";
 import { FollowUpStateBadge } from "@/components/jobs/FollowUpStateBadge";
 import { FollowUpWorkflowButton } from "@/components/jobs/FollowUpWorkflowButton";
@@ -17,8 +19,10 @@ import {
   getJobActivities,
   getRecommendedAction,
 } from "@/lib/follow-ups";
+import { getInboundRequestForJob } from "@/lib/inbound";
+import { formatReceivedExact } from "@/lib/format-received";
 import { getJobById } from "@/lib/jobs";
-import { JOB_SOURCE_LABELS } from "@/types";
+import { INBOUND_SOURCE_LABELS, JOB_SOURCE_LABELS } from "@/types";
 
 type JobDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -32,9 +36,14 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
     notFound();
   }
 
-  const activities = await getJobActivities(id);
+  const [activities, inboundRequest] = await Promise.all([
+    getJobActivities(id),
+    getInboundRequestForJob(id),
+  ]);
   const recommended = getRecommendedAction(job.status);
   const callHref = job.phone ? `tel:${job.phone.replace(/\s/g, "")}` : null;
+
+  const jobWithActivity = { ...job, activities: activities.slice(0, 1) };
 
   return (
     <PageFrame>
@@ -44,7 +53,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {job.status !== "DONE" && job.status !== "SCHEDULED" ? (
-              <FollowUpWorkflowButton job={{ ...job, activities: activities.slice(0, 1) }} />
+              <FollowUpWorkflowButton job={jobWithActivity} />
             ) : (
               <span className="font-mono text-[11px] tracking-wide text-nt-secondary uppercase">
                 {recommended}
@@ -64,6 +73,10 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         }
       />
 
+      <Suspense fallback={null}>
+        <ConvertedJobBanner job={jobWithActivity} />
+      </Suspense>
+
       <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <Panel title="Who">
           <Fact label="Customer" value={job.customerName} />
@@ -80,6 +93,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               )
             }
           />
+          <Fact label="Email" value={job.email ?? "—"} />
         </Panel>
 
         <section className="space-y-3 rounded-lg border border-nt-border bg-nt-surface p-4 sm:p-6">
@@ -139,6 +153,31 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
           <Fact label="Last updated" value={formatDate(job.updatedAt)} />
         </Panel>
       </div>
+
+      {inboundRequest ? (
+        <section className="space-y-3 rounded-lg border border-nt-border bg-nt-surface p-4 sm:p-6">
+          <h2 className="border-b border-nt-border pb-4 font-display text-base font-bold tracking-tight text-white">
+            Original inbound request
+          </h2>
+          <Fact
+            label="Source"
+            value={INBOUND_SOURCE_LABELS[inboundRequest.source]}
+          />
+          <Fact
+            label="Received"
+            value={formatReceivedExact(inboundRequest.receivedAt)}
+          />
+          <p className="whitespace-pre-wrap text-xs leading-relaxed text-neutral-300">
+            {inboundRequest.message}
+          </p>
+          <Link
+            href="/inbox"
+            className="inline-block font-mono text-[11px] text-nt-secondary hover:text-white hover:underline"
+          >
+            Back to inbox
+          </Link>
+        </section>
+      ) : null}
 
       <section className="rounded-lg border border-nt-border bg-nt-surface p-4 sm:p-6">
         <h2 className="mb-4 border-b border-nt-border pb-4 font-display text-base font-bold tracking-tight text-white">

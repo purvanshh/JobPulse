@@ -21,8 +21,10 @@ enum JobStatus {
 enum JobSource {
   PHONE
   WEBSITE
+  EMAIL
   TEXT
   REFERRAL
+  NOTEBOOK
   REPEAT_CUSTOMER
   OTHER
 }
@@ -33,19 +35,37 @@ enum ActivityType {
   STATUS_CHANGED
 }
 
+enum InboundSource {
+  PHONE
+  WEBSITE
+  EMAIL
+  TEXT
+  REFERRAL
+  NOTEBOOK
+}
+
+enum InboundStatus {
+  NEW
+  REVIEWED
+  CONVERTED
+  DISMISSED
+}
+
 model Job {
-  id             String     @id @default(cuid())
-  customerName   String
-  company        String?
-  phone          String?
-  jobDescription String
-  source         JobSource  @default(OTHER)
-  status         JobStatus  @default(NEW)
-  nextFollowUp   DateTime
-  notes          String?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  activities     Activity[]
+  id              String           @id @default(cuid())
+  customerName    String
+  company         String?
+  phone           String?
+  email           String?
+  jobDescription  String
+  source          JobSource        @default(OTHER)
+  status          JobStatus        @default(NEW)
+  nextFollowUp    DateTime
+  notes           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  activities      Activity[]
+  inboundRequests InboundRequest[]
 }
 
 model Activity {
@@ -55,4 +75,19 @@ model Activity {
   type      ActivityType
   note      String?
   createdAt DateTime     @default(now())
+}
+
+model InboundRequest {
+  id            String        @id @default(cuid())
+  source        InboundSource
+  customerName  String
+  customerPhone String
+  customerEmail String?
+  message       String
+  receivedAt    DateTime      @default(now())
+  status        InboundStatus @default(NEW)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  jobId         String?       @unique
+  job           Job?          @relation(fields: [jobId], references: [id], onDelete: SetNull)
 }

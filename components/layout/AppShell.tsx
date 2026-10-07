@@ -1,7 +1,13 @@
 import { MobileNav } from "@/components/layout/MobileNav";
 import { Sidebar } from "@/components/layout/Sidebar";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  newInboundCount = 0,
+}: {
+  children: React.ReactNode;
+  newInboundCount?: number;
+}) {
   return (
     <div className="flex min-h-screen min-w-0 bg-nt-bg text-white">
       <a
@@ -10,9 +16,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         Skip to content
       </a>
-      <Sidebar />
+      <Sidebar newInboundCount={newInboundCount} />
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
-        <MobileNav />
+        <MobileNav newInboundCount={newInboundCount} />
         <main id="main-content" className="flex min-w-0 flex-1 flex-col">
           {children}
         </main>

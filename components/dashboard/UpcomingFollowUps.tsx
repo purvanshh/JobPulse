@@ -26,8 +26,8 @@ export function UpcomingFollowUps({ jobs }: { jobs: Job[] }) {
       </div>
       {jobs.length === 0 ? (
         <EmptyState
-          title="No upcoming follow-ups"
-          description="New follow-ups will appear here as you schedule them."
+          title="You're caught up."
+          description="Nothing scheduled after today. New follow-ups appear here when you set them."
           className="py-8"
         />
       ) : (

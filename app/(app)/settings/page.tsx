@@ -2,12 +2,14 @@ import { PageFrame } from "@/components/layout/PageFrame";
 import { PageHeader } from "@/components/layout/PageHeader";
 
 const assumptions = [
+  "Today = who to call · Inbox = incoming · Jobs = full pipeline",
+  "Job status and follow-up date are separate — a job can be Waiting on Customer and overdue at once",
   "Single operator — no login or multi-user roles",
   "Local calendar day for follow-ups (machine timezone)",
   "SQLite file storage for easy local setup",
-  "No email, SMS, or quote-sending integrations",
-  "No push notifications or reminder workers",
-  "Call uses a phone link (tel:) when a number exists",
+  "Inbound channels are simulated — no real Gmail/SMS/telephony",
+  "Public /request-service and POST /api/inbound/[source] feed the same Inbox",
+  "Marking contacted records history and next follow-up; status changes only if Denise chooses",
 ];
 
 export default function SettingsPage() {

@@ -138,6 +138,14 @@ export function JobForm({ job, mode }: JobFormProps) {
               defaultValue={job?.phone ?? ""}
             />
           </Field>
+          <Field id="email" label="Email" error={state.fieldErrors?.email}>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              defaultValue={job?.email ?? ""}
+            />
+          </Field>
         </div>
       </section>
 

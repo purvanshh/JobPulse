@@ -8,9 +8,9 @@ import { toast } from "sonner";
 import type { Activity, Job } from "@prisma/client";
 
 import { markJobContacted } from "@/lib/actions";
-import { addDaysFromToday, formatDate, toDateInputValue } from "@/lib/dates";
+import { addDaysFromToday, toDateInputValue } from "@/lib/dates";
 import { getRecommendedAction } from "@/lib/follow-up-rules";
-import { JOB_STATUS_LABELS } from "@/types";
+import { JOB_STATUS_LABELS, JOB_STATUSES } from "@/types";
 import { cn } from "@/lib/utils";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -30,25 +30,28 @@ import { Textarea } from "@/components/ui/textarea";
 type JobWithActivity = Job & { activities?: Activity[] };
 
 const nextFollowUpPresets = [
+  { value: "today", label: "Today" },
   { value: "tomorrow", label: "Tomorrow" },
-  { value: "three_days", label: "3 Days" },
-  { value: "next_week", label: "Next Week" },
+  { value: "three_days", label: "In 3 days" },
+  { value: "next_week", label: "Next week" },
   { value: "custom", label: "Custom" },
 ] as const;
 
 export function FollowUpWorkflowButton({
   job,
   triggerClassName,
+  defaultOpen = false,
 }: {
   job: JobWithActivity;
   triggerClassName?: string;
+  defaultOpen?: boolean;
 }) {
   const router = useRouter();
   const actionLabel = getRecommendedAction(job.status);
-  const [open, setOpen] = useState(false);
-  const [step, setStep] = useState<"review" | "next">("review");
+  const [open, setOpen] = useState(defaultOpen);
   const [preset, setPreset] =
     useState<(typeof nextFollowUpPresets)[number]["value"]>("tomorrow");
+  const [statusValue, setStatusValue] = useState(job.status);
   const [pending, startTransition] = useTransition();
 
   if (job.status === "SCHEDULED" || job.status === "DONE") {
@@ -62,12 +65,11 @@ export function FollowUpWorkflowButton({
     );
   }
 
-  const latest = job.activities?.[0];
   const callHref = job.phone ? `tel:${job.phone.replace(/\s/g, "")}` : null;
 
   function reset() {
-    setStep("review");
     setPreset("tomorrow");
+    setStatusValue(job.status);
   }
 
   return (
@@ -78,161 +80,133 @@ export function FollowUpWorkflowButton({
         if (!next) reset();
       }}
     >
-      <DialogTrigger className={cn(buttonVariants({ size: "sm" }), triggerClassName)}>
+      <DialogTrigger
+        className={cn(buttonVariants({ size: "sm" }), triggerClassName)}
+      >
         {actionLabel}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
-        {step === "review" ? (
-          <>
-            <DialogHeader>
-              <DialogTitle>{actionLabel}</DialogTitle>
-              <DialogDescription>
-                Review the job, contact the customer if needed, then record the
-                outcome. Marking contacted does not change job status.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-3 text-sm">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Customer
-                </p>
-                <p className="font-medium">{job.customerName}</p>
-                {job.company ? (
-                  <p className="text-muted-foreground">{job.company}</p>
-                ) : null}
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Phone
-                </p>
-                {callHref ? (
-                  <a href={callHref} className="font-medium text-primary hover:underline">
-                    {job.phone}
-                  </a>
-                ) : (
-                  <p className="text-muted-foreground">No phone number</p>
+        <form
+          action={(formData) => {
+            startTransition(async () => {
+              const result = await markJobContacted(job.id, formData);
+              if (result.ok) {
+                toast.success(result.message ?? "Follow-up saved.");
+                setOpen(false);
+                reset();
+                router.refresh();
+              } else {
+                toast.error(result.message ?? "Couldn't save this follow-up.");
+              }
+            });
+          }}
+          className="space-y-4"
+        >
+          <DialogHeader>
+            <DialogTitle>{actionLabel}</DialogTitle>
+            <DialogDescription className="text-xs text-nt-secondary">
+              {job.customerName}
+              {job.company ? ` · ${job.company}` : ""} — record the call and set
+              the next check-in. Status stays the same unless you change it.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-wrap items-center gap-2 rounded-[4px] border border-nt-border bg-[#0A0A0A] px-3 py-2">
+            <span className="font-mono text-[10px] tracking-widest text-nt-secondary uppercase">
+              Customer contacted?
+            </span>
+            <span className="rounded-[4px] border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-400">
+              Yes — saving records contact
+            </span>
+            {callHref ? (
+              <a
+                href={callHref}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "xs" }),
+                  "ml-auto",
                 )}
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Status
-                </p>
-                <p className="font-medium">{JOB_STATUS_LABELS[job.status]}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Last activity
-                </p>
-                <p className="text-muted-foreground">
-                  {latest
-                    ? `${formatDate(latest.createdAt)} — ${latest.note ?? latest.type}`
-                    : "No activity yet"}
-                </p>
-              </div>
-              {job.notes ? (
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Notes
-                  </p>
-                  <p className="whitespace-pre-wrap text-muted-foreground">{job.notes}</p>
-                </div>
-              ) : null}
+              >
+                Call {job.phone}
+              </a>
+            ) : (
+              <span className="ml-auto font-mono text-[10px] text-nt-secondary">
+                No phone on file
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor={`workflow-note-${job.id}`}>Notes</Label>
+            <Textarea
+              id={`workflow-note-${job.id}`}
+              name="note"
+              rows={3}
+              autoFocus
+              placeholder="Left voicemail. Customer said they will call back tomorrow."
+            />
+          </div>
+
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium">Next follow-up</legend>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {nextFollowUpPresets.map((item) => (
+                <label
+                  key={item.value}
+                  className="flex cursor-pointer items-center gap-2 rounded-[4px] border border-[#27272A] px-3 py-2 text-xs"
+                >
+                  <input
+                    type="radio"
+                    name="preset"
+                    value={item.value}
+                    checked={preset === item.value}
+                    onChange={() => setPreset(item.value)}
+                  />
+                  {item.label}
+                </label>
+              ))}
             </div>
-            <DialogFooter className="gap-2 sm:justify-between">
-              {callHref ? (
-                <a href={callHref} className={cn(buttonVariants({ variant: "outline" }))}>
-                  Call
-                </a>
-              ) : (
-                <span className="text-sm text-muted-foreground">No phone number</span>
-              )}
-              <Button type="button" onClick={() => setStep("next")}>
-                Mark contacted
-              </Button>
-            </DialogFooter>
-          </>
-        ) : (
-          <form
-            action={(formData) => {
-              startTransition(async () => {
-                const result = await markJobContacted(job.id, formData);
-                if (result.ok) {
-                  toast.success(
-                    "Contact recorded. Next follow-up set. Status unchanged.",
-                  );
-                  setOpen(false);
-                  reset();
-                  router.refresh();
-                } else {
-                  toast.error(result.message ?? "Couldn't record this contact.");
-                }
-              });
-            }}
-            className="space-y-4"
-          >
-            <DialogHeader>
-              <DialogTitle>Set next follow-up</DialogTitle>
-              <DialogDescription>
-                Status stays the same. Choose when this job should come back to
-                Needs Attention.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-2">
-              <Label htmlFor={`workflow-note-${job.id}`}>Note (optional)</Label>
-              <Textarea
-                id={`workflow-note-${job.id}`}
-                name="note"
-                rows={3}
-                autoFocus
-                placeholder="Spoke with manager about the quote…"
+          </fieldset>
+
+          {preset === "custom" ? (
+            <div className="space-y-1.5">
+              <Label htmlFor={`workflow-custom-${job.id}`}>Custom date</Label>
+              <Input
+                id={`workflow-custom-${job.id}`}
+                name="customDate"
+                type="date"
+                defaultValue={toDateInputValue(addDaysFromToday(1))}
               />
             </div>
-            <fieldset className="space-y-2">
-              <legend className="text-sm font-medium">When</legend>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {nextFollowUpPresets.map((item) => (
-                  <label
-                    key={item.value}
-                    className="flex cursor-pointer items-center gap-2 rounded-md border border-border px-3 py-2 text-sm"
-                  >
-                    <input
-                      type="radio"
-                      name="preset"
-                      value={item.value}
-                      checked={preset === item.value}
-                      onChange={() => setPreset(item.value)}
-                    />
-                    {item.label}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            {preset === "custom" ? (
-              <div className="space-y-2">
-                <Label htmlFor={`workflow-custom-${job.id}`}>Custom date</Label>
-                <Input
-                  id={`workflow-custom-${job.id}`}
-                  name="customDate"
-                  type="date"
-                  defaultValue={toDateInputValue(addDaysFromToday(1))}
-                />
-              </div>
-            ) : null}
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setStep("review")}
-                disabled={pending}
-              >
-                Back
-              </Button>
-              <Button type="submit" disabled={pending}>
-                {pending ? "Saving…" : "Save follow-up"}
-              </Button>
-            </DialogFooter>
-          </form>
-        )}
+          ) : null}
+
+          <div className="space-y-1.5">
+            <Label htmlFor={`workflow-status-${job.id}`}>
+              Status{" "}
+              <span className="font-normal text-nt-secondary">(optional)</span>
+            </Label>
+            <select
+              id={`workflow-status-${job.id}`}
+              name="status"
+              value={statusValue}
+              onChange={(event) =>
+                setStatusValue(event.target.value as Job["status"])
+              }
+              className="flex h-9 w-full rounded-[4px] border border-[#27272A] bg-[#0A0A0A] px-3 font-mono text-xs text-white outline-none focus-visible:border-white"
+            >
+              {JOB_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {JOB_STATUS_LABELS[status]}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <DialogFooter>
+            <Button type="submit" disabled={pending} className="w-full sm:w-auto">
+              {pending ? "Saving…" : "Save follow-up"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

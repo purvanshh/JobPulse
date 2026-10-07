@@ -12,7 +12,9 @@ I treated the call as a scope document. Denise already runs the company. The fai
 
 That splits the work into a place and a clock. Status answers where the job is. A follow-up date answers when she has to act. A job can be correctly “Waiting on Quote” and still be two days late, so every open job carries both. Today sorts by the date: overdue before due today, and the oldest slip first, because the longest silence is the job most likely to walk. Done jobs leave that list. There is nothing left to call about, and they should not inflate the open count.
 
-The morning loop stays short on purpose. She records the request once, including the channel it came in on, so the notebook stops being the system of record. Today shows the people who need her. The button on each card is a fixed label for that status — Contact Customer, Follow Up on Quote, Follow Up — so the same job reads the same way every morning. Marking someone contacted writes what happened and asks for the next date. It leaves the pipeline status alone. A phone call is a different decision from “they accepted the quote” or “a tech is booked.”
+Incoming channels needed an intermediate layer. Requests land in **Inbox** first (phone, website, email, text, referral, notebook). Denise reviews, then converts to a Job — customer, phone, email, description, and source carry over. From there the existing status + follow-up loop takes over. Real Gmail/SMS/telephony are out of scope; simulated intake and `POST /api/inbound/[source]` prove the same pipeline.
+
+The morning loop stays short on purpose. Today shows overdue follow-ups, due-today work, and new inbound requests with a primary action on each card. Marking someone contacted writes what happened and asks for the next date. It leaves pipeline status alone unless she changes it. A phone call is a different decision from “they accepted the quote” or “a tech is booked.”
 
 Scheduling, invoicing, texting, and login stay out of this prototype. She already knows where the four techs are. The lost revenue was a forgotten follow-up. Adding those surfaces would turn the first screen into a field-service suite. The first screen has to stay the call list.
 
@@ -20,45 +22,64 @@ SQLite and Server Actions follow the same constraint. The prototype has to run f
 
 ## Solution
 
-JobPulse centers on a **Today** dashboard:
+JobPulse centers on three screens:
 
-1. Jobs are recorded with a status and next follow-up date  
-2. Today prioritizes overdue and due-today work  
-3. Denise contacts the customer and records what happened  
-4. The next follow-up is scheduled  
-5. Jobs move through New → Waiting on Quote → Waiting on Customer → Scheduled → Done  
+1. **Today** — who needs attention (overdue, due today, new requests) and what to do next  
+2. **Inbox** — incoming requests before they become jobs  
+3. **Jobs** — full pipeline with status, follow-up state, and source filters  
+
+Morning loop:
+
+1. Request arrives (any channel) → Inbox as NEW  
+2. Denise reviews and converts to a Job  
+3. Job gets a status + next follow-up date  
+4. Today prioritizes overdue and due-today work  
+5. She records the contact, sets the next follow-up  
+6. Jobs move New → Waiting on Quote → Waiting on Customer → Scheduled → Done  
 
 ## Demo (about 60 seconds)
 
-Live demo: [https://job-pulse-smoky-nine.vercel.app/](https://job-pulse-smoky-nine.vercel.app/)
+Live Demo: [Prototype](https://job-pulse-smoky-nine.vercel.app/)
 
-1. Open **Today** and read the attention summary  
-2. Open an overdue or due-today job card  
-3. Use the primary action (for example **Follow Up on Quote**)  
-4. Mark the customer contacted and set the next follow-up  
-5. Confirm the dashboard updates  
-6. Open **Jobs**, filter by status, and inspect activity history  
+1. Open **Today** — read “N people need attention”  
+2. Handle an overdue or due-today card with **Follow Up** (note + next date)  
+3. Open a **New request** card → Review → **Convert to Job**  
+4. On the job, set status (e.g. Waiting on Quote) and confirm follow-up  
+5. Confirm the job appears under Needs Attention when due  
+6. Open **Jobs**, filter by status / follow-up / source  
+
+Optional: submit `/request-service` or use **Simulate incoming** on Inbox.
 
 ## Key Product Decisions
 
-These follow from the approach above.
-
-- **Today is home** — the morning habit path should require zero hunting  
-- **Scheduling is out of scope** — the customer prioritized forgotten follow-ups  
+- **Today is home** — morning habit path should require zero hunting  
+- **Inbox before Jobs** — requests are not jobs until Denise converts them  
+- **Status ≠ follow-up** — pipeline stage and when to call are separate  
+- **Scheduling is out of scope** — customer prioritized forgotten follow-ups  
 - **No AI** — recommended actions are a deterministic status map  
 - **SQLite** — evaluators can run the prototype locally without infra  
 - **Server Actions** — form-heavy mutations without a separate REST layer  
-- **Mark Contacted does not change status** — follow-up timing and pipeline stage are separate decisions  
+- **Mark contacted does not force a status change** — unless Denise chooses one  
 
 ## Features
 
-- Today dashboard with overdue / due-today prioritization  
-- Recommended next actions by status  
-- Job CRUD, search, and URL filters  
-- Quick status updates  
-- Mark Contacted workflow with next follow-up presets  
-- Lightweight activity history  
-- Responsive desktop table / mobile cards  
+- Today command center: overdue, due today, new inbound — each with a primary action  
+- Fast follow-up dialog: note + next date (+ optional status) in one step  
+- Unified Inbox for PHONE / WEBSITE / EMAIL / TEXT / REFERRAL / NOTEBOOK  
+- Convert inbound → Job (idempotent), with activity history and linked original request  
+- Quick-add + simulate intake; public `/request-service`; `POST /api/inbound/[source]`  
+- Job CRUD, search, status / follow-up / source filters  
+- Activity timeline (contacted, status changes, follow-up scheduled, conversion)  
+- Responsive desktop / mobile layout  
+
+## What is real vs future integration
+
+| Implemented now | Not in this prototype |
+| --- | --- |
+| Persisted Inbox → Job → Follow-up → Today | Real Gmail / SMS / telephony |
+| Simulated + website + API intake | Auth / multi-tenant |
+| Activity history on jobs | Quote email sending |
+| Status + follow-up semantics | Tech dispatch, GPS, invoicing, payments |
 
 ## Tech Stack
 
@@ -69,9 +90,9 @@ Next.js (App Router), React, TypeScript, Tailwind CSS, shadcn/ui, Prisma, SQLite
 ```text
 UI (App Router)
   ↓
-Server Actions
+Server Actions (+ POST /api/inbound/[source])
   ↓
-Business logic (lib/follow-ups, lib/dates, lib/jobs)
+Business logic (lib/follow-ups, lib/inbound, lib/dates, lib/jobs)
   ↓
 Prisma
   ↓
@@ -97,7 +118,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run lint` | ESLint |
 | `npm run test` | Unit tests (Vitest) |
 | `npm run test:watch` | Watch mode |
-| `npm run db:seed` | Load demo jobs |
+| `npm run db:seed` | Load demo jobs + inbound requests |
 | `npm run db:studio` | Prisma Studio |
 
 ## Testing
@@ -106,14 +127,14 @@ Open [http://localhost:3000](http://localhost:3000).
 npm run test
 ```
 
-Focused unit tests cover date-only semantics, follow-up state, recommended actions, attention prioritization, and upcoming ordering in `lib/follow-ups.test.ts`.
+Unit tests cover date-only semantics, follow-up state, recommended actions, attention prioritization, upcoming ordering (`lib/follow-ups.test.ts`), and inbound validation/sorting (`lib/inbound.test.ts`).
 
 ## Scope / Non-goals
 
 Not included (intentionally):
 
 - Authentication / multi-tenancy  
-- Email or SMS sending  
+- Real email or SMS sending / telephony  
 - Actual quote transmission  
 - Technician GPS, routing, or dispatch  
 - Invoicing / payments  
@@ -122,4 +143,4 @@ Not included (intentionally):
 
 ## Future Extensions
 
-Possible later work: inbound email/webform capture, SMS reminders, quote send tracking, technician scheduling, hosted Postgres + auth. Each should still serve “don’t lose the follow-up.”
+Possible later work: real inbound email/webform webhooks, SMS reminders, quote send tracking, technician scheduling, hosted Postgres + auth. Each should still serve “don’t lose the follow-up.”

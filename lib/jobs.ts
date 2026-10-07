@@ -1,4 +1,4 @@
-import type { JobStatus, Prisma } from "@prisma/client";
+import type { JobSource, JobStatus, Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
 import { toDateOnly } from "@/lib/dates";
@@ -6,6 +6,7 @@ import { toDateOnly } from "@/lib/dates";
 export type JobListFilters = {
   q?: string;
   status?: JobStatus;
+  source?: JobSource;
   followUp?: "overdue" | "today" | "upcoming" | "none";
 };
 
@@ -20,11 +21,16 @@ export async function listJobs(filters: JobListFilters = {}) {
       { company: { contains: query } },
       { jobDescription: { contains: query } },
       { phone: { contains: query } },
+      { email: { contains: query } },
     ];
   }
 
   if (filters.status) {
     where.status = filters.status;
+  }
+
+  if (filters.source) {
+    where.source = filters.source;
   }
 
   if (filters.followUp === "none") {

@@ -1,9 +1,14 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { Toaster } from "@/components/ui/sonner";
+import { countNewInboundRequests } from "@/lib/inbound";
 
-export default function AppLayout({ children }: LayoutProps<"/">) {
+export const dynamic = "force-dynamic";
+
+export default async function AppLayout({ children }: LayoutProps<"/">) {
+  const newInboundCount = await countNewInboundRequests();
+
   return (
-    <AppShell>
+    <AppShell newInboundCount={newInboundCount}>
       {children}
       <Toaster richColors closeButton position="top-right" />
     </AppShell>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, ClipboardList, Menu, Settings, Wrench } from "lucide-react";
+import { Menu, Wrench } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -13,20 +13,10 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { isNavActive, NAV_ITEMS } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { href: "/", label: "Today", icon: CalendarDays, attention: true },
-  { href: "/jobs", label: "Jobs", icon: ClipboardList, attention: false },
-  { href: "/settings", label: "Settings", icon: Settings, attention: false },
-];
-
-function isActive(pathname: string, href: string) {
-  if (href === "/") return pathname === "/";
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-export function MobileNav() {
+export function MobileNav({ newInboundCount = 0 }: { newInboundCount?: number }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -64,8 +54,12 @@ export function MobileNav() {
             </SheetTitle>
           </SheetHeader>
           <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Mobile">
-            {navItems.map(({ href, label, icon: Icon, attention }) => {
-              const active = isActive(pathname, href);
+            {NAV_ITEMS.map(({ href, label, icon: Icon, attention, badgeKey }) => {
+              const active = isNavActive(pathname, href);
+              const badge =
+                badgeKey === "inboundNew" && newInboundCount > 0
+                  ? newInboundCount
+                  : null;
 
               return (
                 <Link
@@ -83,7 +77,11 @@ export function MobileNav() {
                     <Icon className="h-3.5 w-3.5" aria-hidden />
                     {label}
                   </span>
-                  {active && attention ? (
+                  {badge != null ? (
+                    <span className="rounded-[4px] bg-nt-amber-subtle px-1.5 py-0.5 font-mono text-[10px] font-semibold text-nt-amber">
+                      {badge}
+                    </span>
+                  ) : active && attention ? (
                     <span className="h-1.5 w-1.5 rounded-full bg-nt-red shadow-[0_0_8px_rgba(255,46,46,0.6)]" />
                   ) : null}
                 </Link>

@@ -1,9 +1,8 @@
 import type { Activity, Job } from "@prisma/client";
 
-import { ChangeFollowUpButton } from "@/components/jobs/ChangeFollowUpButton";
 import { FollowUpStateBadge } from "@/components/jobs/FollowUpStateBadge";
 import { FollowUpWorkflowButton } from "@/components/jobs/FollowUpWorkflowButton";
-import { JobStatusSelect } from "@/components/jobs/JobStatusSelect";
+import { JobStatusBadge } from "@/components/jobs/JobStatusBadge";
 import { formatDate } from "@/lib/dates";
 import { getFollowUpState, getFollowUpUrgencyLabel } from "@/lib/follow-up-rules";
 import { cn } from "@/lib/utils";
@@ -11,7 +10,7 @@ import { cn } from "@/lib/utils";
 type JobWithActivity = Job & { activities?: Activity[] };
 
 const ghostAction =
-  "h-auto rounded-[4px] border-[#222222] bg-transparent px-3 py-1.5 font-mono text-xs font-normal text-nt-secondary shadow-none hover:bg-[#1E1E22] hover:text-white dark:border-[#222222] dark:bg-transparent dark:text-nt-secondary dark:hover:bg-[#1E1E22] dark:hover:text-white";
+  "inline-flex h-auto items-center rounded-[4px] border border-[#222222] bg-transparent px-3 py-1.5 font-mono text-xs font-normal text-nt-secondary shadow-none hover:bg-[#1E1E22] hover:text-white";
 
 const primaryAction =
   "h-auto rounded-[4px] border-transparent bg-white px-3 py-1.5 font-mono text-xs font-medium text-black shadow-none hover:bg-neutral-200";
@@ -30,16 +29,18 @@ export function JobAttentionCard({ job }: { job: JobWithActivity }) {
       )}
     >
       <div className="min-w-0 space-y-1.5">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-semibold tracking-tight text-white">
             {job.customerName}
           </span>
-          <JobStatusSelect jobId={job.id} status={job.status} variant="telemetry" />
+          <JobStatusBadge status={job.status} />
         </div>
         {job.company ? (
           <p className="text-xs font-medium text-nt-muted">{job.company}</p>
         ) : null}
-        <p className="text-xs font-normal text-neutral-300">{job.jobDescription}</p>
+        <p className="line-clamp-2 text-xs font-normal text-neutral-300">
+          {job.jobDescription}
+        </p>
         <div className="flex flex-wrap items-center gap-2 pt-0.5">
           <FollowUpStateBadge job={job} />
           <span className="font-mono text-[11px] text-nt-secondary">
@@ -65,12 +66,11 @@ export function JobAttentionCard({ job }: { job: JobWithActivity }) {
 
       <div className="flex w-full min-w-0 flex-wrap items-center gap-2 self-start md:w-auto md:self-center">
         {callHref ? (
-          <a href={callHref} className={cn(ghostAction, "inline-flex items-center")}>
+          <a href={callHref} className={ghostAction}>
             Call
           </a>
         ) : null}
         <FollowUpWorkflowButton job={job} triggerClassName={primaryAction} />
-        <ChangeFollowUpButton jobId={job.id} className={ghostAction} />
       </div>
     </article>
   );

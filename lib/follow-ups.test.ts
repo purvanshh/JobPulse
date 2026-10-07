@@ -29,6 +29,7 @@ function makeJob(
     customerName: overrides.customerName ?? "Customer",
     company: overrides.company ?? null,
     phone: overrides.phone ?? null,
+    email: overrides.email ?? null,
     jobDescription: overrides.jobDescription ?? "Repair",
     source: overrides.source ?? "OTHER",
     status: overrides.status,

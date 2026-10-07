@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { addDaysFromToday, parseDateInput } from "@/lib/dates";
 import { prisma } from "@/lib/db";
-import { JOB_STATUS_LABELS } from "@/types";
+import { JOB_STATUS_LABELS, JOB_STATUSES } from "@/types";
 import {
   formatZodErrors,
   jobFormSchema,
@@ -23,6 +23,7 @@ function revalidateJobPaths(id?: string) {
   try {
     revalidatePath("/");
     revalidatePath("/jobs");
+    revalidatePath("/inbox");
     if (id) {
       revalidatePath(`/jobs/${id}`);
     }
@@ -169,6 +170,7 @@ export async function markJobContacted(
   const note = String(formData.get("note") ?? "").trim();
   const preset = String(formData.get("preset") ?? "tomorrow");
   const customDate = String(formData.get("customDate") ?? "");
+  const statusRaw = String(formData.get("status") ?? "").trim();
 
   let nextFollowUp = addDaysFromToday(1);
   if (preset === "today") {
@@ -193,19 +195,48 @@ export async function markJobContacted(
       return { ok: false, message: "Job not found." };
     }
 
-    await prisma.$transaction([
-      prisma.job.update({
+    const nextStatus = (JOB_STATUSES as string[]).includes(statusRaw)
+      ? (statusRaw as JobFormValues["status"])
+      : existing.status;
+
+    const contactNote = note || "Customer contacted.";
+    const followUpLabel = formatDateForActivity(nextFollowUp);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.job.update({
         where: { id: jobId },
-        data: { nextFollowUp },
-      }),
-      prisma.activity.create({
+        data: {
+          nextFollowUp,
+          status: nextStatus,
+        },
+      });
+
+      await tx.activity.create({
         data: {
           jobId,
           type: "CONTACTED",
-          note: note || "Customer contacted.",
+          note: contactNote,
         },
-      }),
-    ]);
+      });
+
+      await tx.activity.create({
+        data: {
+          jobId,
+          type: "NOTE",
+          note: `Next follow-up scheduled for ${followUpLabel}.`,
+        },
+      });
+
+      if (existing.status !== nextStatus) {
+        await tx.activity.create({
+          data: {
+            jobId,
+            type: "STATUS_CHANGED",
+            note: `Status changed to ${JOB_STATUS_LABELS[nextStatus]}.`,
+          },
+        });
+      }
+    });
   } catch {
     return {
       ok: false,
@@ -214,7 +245,7 @@ export async function markJobContacted(
   }
 
   revalidateJobPaths(jobId);
-  return { ok: true, message: "Follow-up updated." };
+  return { ok: true, message: "Follow-up saved." };
 }
 
 export async function setJobFollowUp(
@@ -228,16 +259,27 @@ export async function setJobFollowUp(
     };
   }
 
+  const nextFollowUp = parseDateInput(dateValue);
+
   try {
     const existing = await prisma.job.findUnique({ where: { id: jobId } });
     if (!existing) {
       return { ok: false, message: "Job not found." };
     }
 
-    await prisma.job.update({
-      where: { id: jobId },
-      data: { nextFollowUp: parseDateInput(dateValue) },
-    });
+    await prisma.$transaction([
+      prisma.job.update({
+        where: { id: jobId },
+        data: { nextFollowUp },
+      }),
+      prisma.activity.create({
+        data: {
+          jobId,
+          type: "NOTE",
+          note: `Next follow-up scheduled for ${formatDateForActivity(nextFollowUp)}.`,
+        },
+      }),
+    ]);
   } catch {
     return {
       ok: false,
@@ -249,11 +291,20 @@ export async function setJobFollowUp(
   return { ok: true };
 }
 
+function formatDateForActivity(value: Date): string {
+  return value.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 function mapFormToJobData(values: JobFormValues) {
   return {
     customerName: values.customerName,
     company: values.company || null,
     phone: values.phone || null,
+    email: values.email || null,
     jobDescription: values.jobDescription,
     source: values.source,
     status: values.status,
