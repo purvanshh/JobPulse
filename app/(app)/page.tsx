@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AttentionSummary } from "@/components/dashboard/AttentionSummary";
 import { NeedsAttention } from "@/components/dashboard/NeedsAttention";
 import { PipelineSummary } from "@/components/dashboard/PipelineSummary";
+import { SummaryMetrics } from "@/components/dashboard/SummaryMetrics";
 import { UpcomingFollowUps } from "@/components/dashboard/UpcomingFollowUps";
 import { PageFrame } from "@/components/layout/PageFrame";
 import { getDashboardJobs } from "@/lib/follow-ups";
@@ -56,6 +57,13 @@ export default async function TodayPage() {
           )}
         </div>
       </section>
+
+      <SummaryMetrics
+        followUpsToday={metrics.followUpsToday}
+        overdue={metrics.overdue}
+        openJobs={metrics.openJobs}
+        scheduled={metrics.scheduled}
+      />
 
       <AttentionSummary
         overdue={metrics.overdue}
